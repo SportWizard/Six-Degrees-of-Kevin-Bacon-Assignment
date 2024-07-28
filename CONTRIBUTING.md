@@ -13,3 +13,49 @@
     git checkout main  # Ensure you are on the main branch
     git checkout -b <branch_name>  # Replace <branch_name> with your branch name
     ```
+
+## Workflow
+
+### Start of Work
+- **Fetch (If you are in the middle of something and don't want to mess up the work directory) or pull the latest changes:**
+  - Ensure your local repository is up-to-date:
+    ```sh
+    git pull origin main
+    # or
+    git fetch origin main
+    ```
+
+### End of Work
+- **Fetch (To review the updated files) or pull (Less control over the merge process) the latest changes again:**
+  - Ensure you have the most recent updates before merging:
+    ```sh
+    git fetch origin main
+    # or
+    git pull origin main 
+    ```
+- **Review the fetched changes (Only for fetch):**
+  - View the new commits:
+    ```sh
+    git log HEAD..origin/main
+    ```
+  - Check the differences:
+    ```sh
+    git diff HEAD..origin/main
+    ```
+  - List the files changed:
+    ```sh
+    git diff --name-only HEAD..origin/main
+    ```
+
+- **Merge the latest changes (Only for fetch):**
+  - Example:
+    ```sh
+    git merge origin/main
+    ```
+- **Resolve any conflicts that arise.**
+
+- **Push your changes to the remote repository:**
+  - Example:
+    ```sh
+    git push origin <branch_name>
+    ```
