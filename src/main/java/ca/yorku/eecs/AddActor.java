@@ -18,15 +18,15 @@ public class AddActor implements HttpHandler{
 	public void handle(HttpExchange request) {
 		try {
 			// Only accept POST request
-			if (request.getRequestMethod().equals("POST"))
-				this.handlePost(request);
+			if (request.getRequestMethod().equals("PUT"))
+				this.handlePut(request);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void handlePost(HttpExchange request) throws IOException, JSONException {
+	public void handlePut(HttpExchange request) throws IOException, JSONException {
 		String body = Utils.convert(request.getRequestBody()); // Convert request to String
 		JSONObject data = new JSONObject(body); // Convert JSON to an object
 		
@@ -48,7 +48,7 @@ public class AddActor implements HttpHandler{
 		System.out.println("name:" + name);
 		System.out.println("actorId" + actorId);
 		
-		// Run the POST request with Neo4j
+		// Run the PUT request with Neo4j
 		try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
 			session.run(String.format("CREATE (Actor {name: %s, actor_id: %s});", name, actorId)); // Run the String/code input in Neo4j
 			System.out.println("Neo4j transaction successfully ran");
