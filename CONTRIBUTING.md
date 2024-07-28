@@ -57,5 +57,7 @@
 - **Push your changes to the remote repository:**
   - Example:
     ```sh
-    git push origin <branch_name>
+    git push -u origin <branch_name>
     ```
+## Finished work
+  - **Push to "main" branch when everything work perfectly.**
