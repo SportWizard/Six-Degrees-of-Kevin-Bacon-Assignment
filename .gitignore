@@ -13,4 +13,5 @@ workbench.xmi
 .classpath
 .project
 .settings/
+.DS_Store
 
