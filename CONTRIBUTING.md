@@ -59,5 +59,13 @@
     ```sh
     git push -u origin <branch_name>
     ```
-## Finished work
-  - **Push to "main" branch when everything work perfectly.**
+
+## Finished Work
+- **Push to the "main" branch when everything works perfectly.**
+
+- **Delete the branch after it has been merged to keep the repository clean:**
+  - Example:
+    ```sh
+    git branch -d <branch_name>  # Deletes the branch locally
+    git push origin --delete <branch_name>  # Deletes the branch from the remote repository
+    ```
