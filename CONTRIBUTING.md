@@ -1,5 +1,6 @@
 # Contributing to Project
 
+**Tutorial (Devin Lo):** https://docs.google.com/document/d/12TmFKePVelHxftiEZ_8il80g4cj-IeXMhKWBEY1GBWU
 ## Branching
 - **Do not commit directly to the "main" branch. Only merge when the code works**
   - The "main" branch should always be in a deployable state and contain tested, production-ready code.
@@ -11,54 +12,52 @@
   - Use the following commands to create and switch to a new branch while in the "main" branch:
     ```sh
     git checkout main  # Ensure you are on the main branch
-    git checkout -b <branch_name>  # Replace <branch_name> with your branch name
+    git checkout -b <branch_name>
     ```
 
 ## Workflow
 
 ### Start of Work
-- **Fetch (If you are in the middle of something and don't want to mess up the work directory) or pull the latest changes:**
-  - Ensure your local repository is up-to-date:
+- **Pull the latest changes to your local "main" branch:**
+  - Example:
     ```sh
+    git checkout main
     git pull origin main
-    # or
-    git fetch origin main
     ```
 
-### End of Work
-- **Fetch (To review the updated files) or pull (Less control over the merge process) the latest changes again:**
-  - Ensure you have the most recent updates before merging:
-    ```sh
-    git fetch origin main
-    # or
-    git pull origin main 
-    ```
-- **Review the fetched changes (Only for fetch):**
-  - View the new commits:
-    ```sh
-    git log HEAD..origin/main
-    ```
-  - Check the differences:
-    ```sh
-    git diff HEAD..origin/main
-    ```
-  - List the files changed:
-    ```sh
-    git diff --name-only HEAD..origin/main
-    ```
-
-- **Merge the latest changes (Only for fetch):**
+### End of Work (If the task is not completed)
+- **Push to the remote feature branch:**
   - Example:
-    ```sh
-    git merge origin/main
-    ```
-- **Resolve any conflicts that arise.**
+  ```sh
+  git push -u origin <branch_name>
+  ```
 
-- **Push your changes to the remote repository:**
+### Finished Work
+- **Merge with your local "main" branch and resolve any conflict. When everything works perfectly, push it to remote "main" branch**
+  - **Merge with local "main" branch:**
+    - Example:
+      ```sh
+      git checkout main
+      git merge <branch_name>
+      ```
+  - **Resolve any conflicts that arise.**
+  - **Push your changes to the remote "main" branch:**
+      - Example:
+      ```sh
+      git push -u origin main
+      ```
+  - **Delete feature branch (Only if you want to)**
+    - Exmaple:
+      ```sh
+      git checkout main
+      git branch -d feature-branch # or git branch -D feature-branch if you need to force delete
+      git push origin --delete feature-branch
+      ```
+
+## Neo4j
+- **Name the nodes by capitalizing the first character**
   - Example:
-    ```sh
-    git push -u origin <branch_name>
-    ```
-
-## Finished Work
-- **Push to the "main" branch when everything works perfectly.**
+    CREATE (**Actor** {...});
+- **Name the properties with snake-case and all characters are lower case**
+  - Example:
+    CREATE (Actor {**name**: "Denzel Washington", **actor_id**: "nm1001213"});
