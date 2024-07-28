@@ -54,6 +54,21 @@
       git push origin --delete feature-branch
       ```
 
+### File Required
+- **If you require a file that just got updated/pushed to "main" branch, do the following:**
+  - **Pull to local "main" branch**
+    - Example:
+      ```sh
+      git checkout main
+      git pull origin main 
+      ```
+  - **Merge the branch with the "main" branch**
+    - Example:
+      ```sh
+      git checkout <branch_name>
+      git merge main
+      ```
+
 ## Neo4j
 - **Name the nodes by capitalizing the first character**
   - Example:
