@@ -69,6 +69,12 @@
       git merge main
       ```
 
+## Documentation
+- **Document the following:**
+  - Class
+  - Methods
+  - Line of codes (Only if needed)
+
 ## Neo4j
 - **Name the nodes by capitalizing the first character**
   - Example:
