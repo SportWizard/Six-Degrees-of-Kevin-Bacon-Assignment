@@ -9,6 +9,7 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.Values;
 import org.neo4j.driver.v1.StatementResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -52,6 +53,9 @@ public class AddActor implements HttpHandler{
 	    if (statusCode == 200) {
 	        String name = data.getString("name");
 	        String actorId = data.getString("actorId");
+	        
+	        System.out.println("Name: " + name);
+	        System.out.println("Actor Id: " + actorId);
 
 	        try {
 	            this.createActor(name, actorId);
@@ -61,6 +65,8 @@ public class AddActor implements HttpHandler{
 	            statusCode = 500;
 	        }
 	    }
+	    else
+	    	System.out.println("Bad request: The request format is incorrect or required parameters are missing or duplicate actorId");
 
 	    this.sendResponse(request, statusCode);
 	}
@@ -69,12 +75,45 @@ public class AddActor implements HttpHandler{
 	 * Validate the request sent by the client
 	 * @param data
 	 * @return Status code of whether the request was OK (200) or invalid (400)
+	 * @throws JSONException 
 	 */
-	private int validateRequestData(JSONObject data) {
-	    if (data.has("name") && data.has("actorId"))
-	        return 200;
-	    else
-	        return 400;
+	private int validateRequestData(JSONObject data) throws JSONException {
+		try {
+		    if (data.has("name") && data.has("actorId") && !this.duplicate(data.getString("actorId")))
+		        return 200; // OK
+		    else
+		        return 400; // Bad request
+		}
+		catch (Exception e) {
+			System.err.print("Caught Exception: " + e.getMessage());
+			return 500; // Internal Server Error
+		}
+	}
+	
+	/**
+	 * @param data
+	 * @return whether actorId is a duplicate
+	 */
+	private boolean duplicate(String actorId) throws Exception {
+		boolean hasDuplicate = false;
+		
+		try (Session session = Utils.driver.session()) {
+            try (Transaction tx = session.beginTransaction()) {
+            	StatementResult results = tx.run("MATCH (a:Actor) WHERE a.actorId = $actorId RETURN a", Values.parameters("actorId", actorId)); // Run query
+            	
+            	// Check if results has any return
+            	if (results.hasNext())
+            		hasDuplicate = true;
+            }
+            catch (Exception e) {
+            	throw new Exception(e);
+            }
+		}
+		catch (Exception e) {
+        	throw new Exception(e);
+        }
+		
+		return hasDuplicate;
 	}
 
 	/**
@@ -84,7 +123,7 @@ public class AddActor implements HttpHandler{
 	 */
 	private void createActor(String name, String actorId) {
 	    try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
-	        session.run(String.format("CREATE (Actor {name: \"%s\", actor_id: \"%s\"})", name, actorId)); // Run the query in Neo4j
+	        session.run("CREATE (a:Actor {name: $name, actorId: $actorId})", Values.parameters("name", name, "actorId", actorId)); // Run the query in Neo4j
 	        System.out.println("Neo4j transaction successfully ran");
 	    }
 	}
