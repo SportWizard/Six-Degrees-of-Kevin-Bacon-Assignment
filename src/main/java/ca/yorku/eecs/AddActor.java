@@ -13,8 +13,15 @@ import org.neo4j.driver.v1.StatementResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+/**
+ * This class is used to add actor to the database (neo4j)
+ */
 public class AddActor implements HttpHandler{
 
+	/**
+	 * Confirming the correct method sent
+	 * @param request request
+	 */
 	@Override
 	public void handle(HttpExchange request) {
 		try {
@@ -29,38 +36,66 @@ public class AddActor implements HttpHandler{
 		}
 	}
 	
+	/**
+	 * Handles PUT request from the client
+	 * @param request
+	 * @throws IOException
+	 * @throws JSONException
+	 */
 	public void handlePut(HttpExchange request) throws IOException, JSONException {
-		String body = Utils.convert(request.getRequestBody()); // Convert request to String
-		JSONObject data = new JSONObject(body); // Convert JSON to an object
-		
-		int statusCode = 0;
-		String name = "";
-		String actorId = "";
-		
-		if (data.has("name") && data.has("actorId")) {
-			name = data.getString("name");
-			actorId = data.getString("actorId");
-			statusCode = 200;
-		}
-		else
-			statusCode = 400; // If the client does not provide the required information
-		
-		System.out.println("name: " + name);
-		System.out.println("actorId: " + actorId);
-		
-		if (statusCode == 200) {
-			// Run the PUT request with Neo4j
-			try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
-				session.run(String.format("CREATE (Actor {name: \"%s\", actor_id: \"%s\"})", name, actorId)); // Run the String/code input in Neo4j
-				System.out.println("Neo4j transaction successfully ran");
-			}
-			catch (Exception e) {
-				System.err.print("Caught Exception: " + e.getMessage());
-				statusCode = 500;
-			}
-		}
-		
-		// Send Response
-		request.sendResponseHeaders(statusCode, -1); // .sendResponseHeaders(Status code, Response length). If response length is unknown, use -1
+	    String body = Utils.convert(request.getRequestBody()); // Convert request to String
+	    JSONObject data = new JSONObject(body); // Convert JSON to an object
+
+	    int statusCode = this.validateRequestData(data);
+	    
+	    // Validate and process data, then save to the database
+	    if (statusCode == 200) {
+	        String name = data.getString("name");
+	        String actorId = data.getString("actorId");
+
+	        try {
+	            this.createActor(name, actorId);
+	        }
+	        catch (Exception e) {
+	            System.err.print("Caught Exception: " + e.getMessage());
+	            statusCode = 500;
+	        }
+	    }
+
+	    this.sendResponse(request, statusCode);
+	}
+
+	/**
+	 * Validate the request sent by the client
+	 * @param data
+	 * @return Status code of whether the request was OK (200) or invalid (400)
+	 */
+	private int validateRequestData(JSONObject data) {
+	    if (data.has("name") && data.has("actorId"))
+	        return 200;
+	    else
+	        return 400;
+	}
+
+	/**
+	 * Create a new node for the Actor and save it to the database (neo4j)
+	 * @param name
+	 * @param actorId
+	 */
+	private void createActor(String name, String actorId) {
+	    try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
+	        session.run(String.format("CREATE (Actor {name: \"%s\", actor_id: \"%s\"})", name, actorId)); // Run the query in Neo4j
+	        System.out.println("Neo4j transaction successfully ran");
+	    }
+	}
+
+	/**
+	 * Send status code back to the client
+	 * @param request
+	 * @param statusCode
+	 * @throws IOException
+	 */
+	private void sendResponse(HttpExchange request, int statusCode) throws IOException {
+	    request.sendResponseHeaders(statusCode, -1); // .sendResponseHeaders(Status code, Response length). If response length is unknown, use -1
 	}
 }
