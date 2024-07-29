@@ -76,7 +76,7 @@
   - Line of codes (Only if needed)
 
 ## Neo4j
-- **Name the nodes by capitalizing the first character and camel case**
+- **Name the label by capitalizing the first character and using camel case**
   - Example:
     CREATE (**Actor** {...});
 - **Name the properties with camel case**
