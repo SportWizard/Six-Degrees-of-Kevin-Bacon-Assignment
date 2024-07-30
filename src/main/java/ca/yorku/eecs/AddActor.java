@@ -99,6 +99,7 @@ public class AddActor implements HttpHandler{
 		
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
+            	// Returns the actor that matches the actorId
             	StatementResult results = tx.run("MATCH (a:Actor) WHERE a.actorId = $actorId RETURN a", Values.parameters("actorId", actorId)); // Run query
             	
             	// Check if results has any return
