@@ -60,7 +60,7 @@ public class AddActor implements HttpHandler{
 	        try {
 	            this.createActor(name, actorId);
 	        }
-	        catch (Exception e) {
+	        catch (Exception e) { // Catch exception from createActor
 	            System.err.print("Caught Exception: " + e.getMessage());
 	            statusCode = 500;
 	        }
@@ -84,7 +84,7 @@ public class AddActor implements HttpHandler{
 		    else
 		        return 400; // Bad request
 		}
-		catch (Exception e) {
+		catch (Exception e) { // Catch exception from duplicate
 			System.err.print("Caught Exception: " + e.getMessage());
 			return 500; // Internal Server Error
 		}
@@ -105,13 +105,7 @@ public class AddActor implements HttpHandler{
             	if (results.hasNext())
             		hasDuplicate = true;
             }
-            catch (Exception e) {
-            	throw new Exception(e);
-            }
 		}
-		catch (Exception e) {
-        	throw new Exception(e);
-        }
 		
 		return hasDuplicate;
 	}
