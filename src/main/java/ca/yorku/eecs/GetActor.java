@@ -91,9 +91,11 @@ public class GetActor implements HttpHandler {
 		
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-            	StatementResult results = tx.run("MATCH (a:Actor) WHERE a.actorId = $actorId RETURN a", Values.parameters("actorId", actorId));
+            	// TODO Change ActedIn to the appropriate relationship named in AddRelationship class
+            	// Match the actor with their movies, and return the one that match the actorId
+            	StatementResult results = tx.run("MATCH (a:Actor)-[:ActedIn]->(m:Movie) WHERE a.actorId = $actorId RETURN a.actorId AS actorId, a.name AS name, m.movieId AS movies", Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
             	
-            	
+            	response = results.next().get("actorId").get("name").get("movies").asString();
             }
 		}
 		
