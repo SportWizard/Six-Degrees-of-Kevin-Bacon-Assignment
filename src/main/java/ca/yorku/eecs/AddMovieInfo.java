@@ -140,7 +140,7 @@ public class AddMovieInfo implements HttpHandler {
 	 */
 	private void createConnection(String movieId, String infoId) {
 	    try (Session session = Utils.driver.session()) {
-	    	// Get the movie and info that matches movieId and infoId, respectively. Then, connect info to movie
+	    	// Get the movie and info that matches movieId and infoId, respectively. Then, connect movie to info
 	        session.run("MATCH (m:Movie) WITH m MATCH (i:Info) WHERE m.movieId = $movieId AND i.infoId = $infoId CREATE (m)-[h:HAS]->(i)", Values.parameters("movieId", movieId, "infoId", infoId)); // Run the query in Neo4j
 	        System.out.println("Neo4j transaction successfully ran");
 	    }
