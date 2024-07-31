@@ -91,7 +91,7 @@ public class AddActor implements HttpHandler{
 	}
 	
 	/**
-	 * @param data
+	 * @param actorId
 	 * @return whether actorId is a duplicate
 	 */
 	private boolean duplicate(String actorId) throws Exception {
