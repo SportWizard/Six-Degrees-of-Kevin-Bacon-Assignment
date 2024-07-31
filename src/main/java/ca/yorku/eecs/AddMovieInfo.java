@@ -78,8 +78,10 @@ public class AddMovieInfo implements HttpHandler {
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-		    if (data.has("movieId") && data.has("infoId") && this.findMovie(data.getString("movieId")) && this.findInfo(data.getString("infoId")))
+		    if (data.has("movieId") && data.has("infoId"))
 		        return 200; // OK
+		    else if (this.findMovie(data.getString("movieId")) && this.findInfo(data.getString("infoId")))
+		    	return 404; // movie or info not found
 		    else
 		        return 400; // Bad request
 		}
@@ -138,7 +140,8 @@ public class AddMovieInfo implements HttpHandler {
 	 */
 	private void createConnection(String movieId, String infoId) {
 	    try (Session session = Utils.driver.session()) {
-	        session.run("CREATE (m:MovieInfo {movieId: $movieId, infoId: $infoId})", Values.parameters("movieId", movieId, "infoId", infoId)); // Run the query in Neo4j
+	    	// Get the movie and info that matches movieId and infoId, respectively. Then, connect info to movie
+	        session.run("MATCH (m:Movie) WITH m MATCH (i:Info) WHERE m.movieId = $movieId AND i.infoId = $infoId CREATE (m)-[h:HAS]->(i)", Values.parameters("movieId", movieId, "infoId", infoId)); // Run the query in Neo4j
 	        System.out.println("Neo4j transaction successfully ran");
 	    }
 	}
