@@ -65,7 +65,7 @@ public class AddMovieInfo implements HttpHandler {
 	        }
 	    }
 	    else
-	    	System.out.println("Bad request: The request format is incorrect or required parameters are missing");
+	    	System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate");
 
 	    this.sendResponse(request, statusCode);
 	}
@@ -78,17 +78,49 @@ public class AddMovieInfo implements HttpHandler {
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-		    if (data.has("movieId") && data.has("infoId"))
-		        return 200; // OK
-		    else if (this.findMovie(data.getString("movieId")) && this.findInfo(data.getString("infoId")))
-		    	return 404; // movie or info not found
-		    else
-		        return 400; // Bad request
+			if (!data.has("movieId") || !data.has("infoId")) {
+	            return 400; // Bad request
+	        }
+	        
+	        String movieId = data.getString("movieId");
+	        String infoId = data.getString("infoId");
+
+	        if (!this.findMovie(movieId) || !this.findInfo(infoId)) {
+	            return 404; // movie or info not found
+	        }
+
+	        if (this.duplicate(movieId, infoId)) {
+	            return 400; // Relationship already established
+	        }
+
+	        return 200; // OK
 		}
-	    catch (Exception e) { // Catch exception from findMovie and findInfo
+	    catch (Exception e) { // Catch exception from duplicate, findMovie and findInfo
 			System.err.print("Caught Exception: " + e.getMessage());
 			return 500; // Internal Server Error
 		}
+	}
+	
+	/**
+	 * @param movieId
+	 * @param infoId
+	 * @return Whether the movie and info already establish a connection
+	 */
+	private boolean duplicate(String movieId, String infoId) {
+		boolean hasDuplicate = false;
+		
+		try (Session session = Utils.driver.session()) {
+            try (Transaction tx = session.beginTransaction()) {
+            	// Returns the connection where the movie matches the movieId and the info matches the infoId
+            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId})-[h:HAS]-(i:Info {infoId: $infoId}) RETURN h", Values.parameters("movieId", movieId, "infoId", infoId)); // Run query
+            	
+            	// Check if results has any return
+            	if (results.hasNext())
+            		hasDuplicate = true;
+            }
+		}
+		
+		return hasDuplicate;
 	}
 	
 	/**
