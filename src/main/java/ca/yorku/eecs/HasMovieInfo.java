@@ -143,13 +143,15 @@ public class HasMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Match movie with movieId and info with infoId. Then match the find the relationship and return true if it exists, else false. OPTIONAL MATCH means that the pattern can be matched if it exists
-            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId}), (i:Info {infoId: $infoId}) OPTIONAL MATCH (m)-[h:HAS]-(i) RETURN EXISTS ((m)-[:HAS]-(i)) AS hasRelationship", Values.parameters("movieId", movieId, "infoId", infoId));  // Use "AS" to rename key, since it will appear the name in the JSON 
+            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId}), (i:Info {infoId: $infoId}) OPTIONAL MATCH (m)-[h:HAS]-(i) RETURN m.movieId AS movieId, i.infoId AS infoId, EXISTS ((m)-[:HAS]-(i)) AS hasRelationship", Values.parameters("movieId", movieId, "infoId", infoId));  // Use "AS" to rename key, since it will appear the name in the JSON 
             	
             	JSONObject json = new JSONObject();
             	
-            	json.put("movieId", movieId); 
-            	json.put("infoId", infoId);
-            	json.put("hasRelationsihp", results.next().get("hasRelationship").asBoolean());
+            	Record record = results.next();
+            	
+            	json.put("movieId", record.get("movieId").asString()); 
+            	json.put("infoId", record.get("infoId").asString());
+            	json.put("hasRelationsihp", record.get("hasRelationship").asBoolean());
             	
             	response = json.toString();
             }
