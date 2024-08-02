@@ -105,7 +105,7 @@ public class GetActor implements HttpHandler {
             	
             	ArrayList<String> movies = new ArrayList<String>();
             	
-            	if (record.get("movies").asString() != null)
+            	if (!record.get("movies").isNull())
             		movies.add(record.get("movies").asString());
             	
             	while (results.hasNext()) {
