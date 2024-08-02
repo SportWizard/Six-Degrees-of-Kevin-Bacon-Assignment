@@ -96,7 +96,15 @@ public class GetActor implements HttpHandler {
             	// Match the actor with their movies, and return the one that match the actorId
             	StatementResult results = tx.run("MATCH (a:Actor)-[:ActedIn]->(m:Movie) WHERE a.actorId = $actorId RETURN a.actorId AS actorId, a.name AS name, m.movieId AS movies", Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
             	
-            	response = results.next().get("actorId").get("name").get("movies").asString();
+            	JSONObject json = new JSONObject();
+            	
+            	Record record = results.next();
+            	
+            	json.put("actorId", record.get("actorId").asString()); 
+            	json.put("infoId", record.get("name").asString());
+            	json.put("hasRelationsihp", record.get("movies").asString());
+            	
+            	response = json.toString();
             }
 		}
 		
@@ -110,11 +118,15 @@ public class GetActor implements HttpHandler {
 	 * @throws IOException
 	 */
 	private void sendResponse(HttpExchange request, int statusCode, String response) throws IOException {
-	    request.sendResponseHeaders(statusCode, response.length()); // .sendResponseHeaders(Status code, Response length)
-	    
-	    // Overwrite the response body with the response
-	    OutputStream os = request.getResponseBody();
-	    os.write(response.getBytes());
-	    os.close();
+		if (statusCode == 200) {
+		    request.sendResponseHeaders(statusCode, response.length()); // .sendResponseHeaders(Status code, Response length)
+		    
+		    // Overwrite the response body with the response
+		    OutputStream os = request.getResponseBody();
+		    os.write(response.getBytes());
+		    os.close();
+		}
+		else
+			request.sendResponseHeaders(statusCode, -1);
 	}
 }
