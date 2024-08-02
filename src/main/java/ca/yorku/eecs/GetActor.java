@@ -24,7 +24,7 @@ public class GetActor implements HttpHandler {
 	 * Confirming the correct method sent
 	 */
 	@Override
-	public void handle(HttpExchange request) throws IOException {
+	public void handle(HttpExchange request) {
 		try {
 			if (request.getRequestMethod().equals("GET"))
 				this.handleGet(request);
