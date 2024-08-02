@@ -37,7 +37,7 @@ public class HasMovieInfo implements HttpHandler {
 	}
 	
 	/**
-	 * 
+	 * Handles Get request
 	 * @param request
 	 * @throws IOException
 	 * @throws JSONException
