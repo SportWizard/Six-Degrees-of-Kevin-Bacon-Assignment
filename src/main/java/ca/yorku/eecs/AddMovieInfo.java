@@ -122,7 +122,8 @@ public class AddMovieInfo implements HttpHandler {
 	
 	/**
 	 * @param movieId
-	 * @return whether movieId exist
+	 * @return Whether the movie exist or not
+	 * @throws Exception
 	 */
 	private boolean findMovie(String movieId) throws Exception {
 		boolean exist = false;
@@ -143,7 +144,8 @@ public class AddMovieInfo implements HttpHandler {
 	
 	/**
 	 * @param infoId
-	 * @return whether infoId exist
+	 * @return Whether the info exist or not
+	 * @throws Exception
 	 */
 	private boolean findInfo(String infoId) throws Exception {
 		boolean exist = false;
