@@ -15,6 +15,7 @@ public class App
         server.createContext("/api/v1/addMovieInfo", new AddMovieInfo());
 
         // Get methods
+        server.createContext("/api/v1/HasMovieInfo", new HasMovieInfo());
         
         server.start();
         System.out.printf("Server started on port %d...\n", PORT);
