@@ -142,16 +142,14 @@ public class HasMovieInfo implements HttpHandler {
 		
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-            	// Returns the connection where the movie matches the movieId and the info matches the infoId
-            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId})-[h:HAS]-(i:Info {infoId: $infoId}) RETURN m.movieId AS movieId, i.infoId AS infoId, EXISTS ((m)-[h:HAS]-(i)) AS hasRelationship", Values.parameters("movieId", movieId, "infoId", infoId));  // Use "AS" to rename key, since it will appear the name in the JSON 
-            	
-            	Record record = results.next();
+            	// Match movie with movieId and info with infoId. Then match the find the relationship and return true if it exists, else false. OPTIONAL MATCH means that the pattern can be matched if it exists
+            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId}), (i:Info {infoId: $infoId}) OPTIONAL MATCH (m)-[h:HAS]-(i) RETURN EXISTS ((m)-[:HAS]-(i)) AS hasRelationship", Values.parameters("movieId", movieId, "infoId", infoId));  // Use "AS" to rename key, since it will appear the name in the JSON 
             	
             	JSONObject json = new JSONObject();
             	
-            	json.put("movieId", record.get("movieId").asString()); 
-            	json.put("infoId", record.get("infoId").asString());
-            	json.put("hasRelationsihp", record.get("hasRelationship").asBoolean());
+            	json.put("movieId", movieId); 
+            	json.put("infoId", infoId);
+            	json.put("hasRelationsihp", results.next().get("hasRelationship").asBoolean());
             	
             	response = json.toString();
             }
@@ -167,11 +165,15 @@ public class HasMovieInfo implements HttpHandler {
 	 * @throws IOException
 	 */
 	private void sendResponse(HttpExchange request, int statusCode, String response) throws IOException {
-	    request.sendResponseHeaders(statusCode, response.length()); // .sendResponseHeaders(Status code, Response length)
-	    
-	    // Overwrite the response body with the response
-	    OutputStream os = request.getResponseBody();
-	    os.write(response.getBytes());
-	    os.close();
+		if (statusCode == 200) {
+		    request.sendResponseHeaders(statusCode, response.length()); // .sendResponseHeaders(Status code, Response length)
+		    
+		    // Overwrite the response body with the response
+		    OutputStream os = request.getResponseBody();
+		    os.write(response.getBytes());
+		    os.close();
+		}
+		else
+			request.sendResponseHeaders(statusCode, -1);
 	}
 }
