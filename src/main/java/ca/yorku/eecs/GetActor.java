@@ -38,7 +38,7 @@ public class GetActor implements HttpHandler {
 	}
 	
 	/**
-	 * 
+	 * Handles Get request
 	 * @param request
 	 * @throws IOException
 	 * @throws JSONException
