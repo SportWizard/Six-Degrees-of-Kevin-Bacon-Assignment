@@ -85,6 +85,7 @@ public class GetActor implements HttpHandler {
 	 * Get an actor that matches the actorId
 	 * @param actorId
 	 * @return the actor with the matching actorId
+	 * @throws Exception
 	 */
 	private String getActor(String actorId) throws Exception {
 		String response = null;
