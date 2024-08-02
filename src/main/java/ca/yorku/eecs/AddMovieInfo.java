@@ -78,20 +78,17 @@ public class AddMovieInfo implements HttpHandler {
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-			if (!data.has("movieId") || !data.has("infoId")) {
+			if (!data.has("movieId") || !data.has("infoId"))
 	            return 400; // Bad request
-	        }
 	        
 	        String movieId = data.getString("movieId");
 	        String infoId = data.getString("infoId");
 
-	        if (!this.findMovie(movieId) || !this.findInfo(infoId)) {
+	        if (!this.findMovie(movieId) || !this.findInfo(infoId))
 	            return 404; // movie or info not found
-	        }
 
-	        if (this.duplicate(movieId, infoId)) {
+	        if (this.duplicate(movieId, infoId))
 	            return 400; // Relationship already established
-	        }
 
 	        return 200; // OK
 		}
