@@ -12,6 +12,7 @@ public class App {
         // Put methods
         server.createContext("/api/v1/addActor", new AddActor());
         server.createContext("/api/v1/addMovieInfo", new AddMovieInfo());
+        server.createContext("/api/v1/addMovie", new AddMovie());
 
         // Get methods
         server.createContext("/api/v1/getActor", new GetActor());

@@ -9,8 +9,15 @@ import org.neo4j.driver.v1.StatementResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+/* AddMovie class is used to add a valid movie node to the database */
 public class AddMovie implements HttpHandler{
 
+    //empty constructor
+    public AddMovie(){}
+
+    /** Method handles the request method accordingly
+    * @param request request from the client
+    * */
     @Override
     public void handle(HttpExchange request) {
         try {
@@ -24,6 +31,11 @@ public class AddMovie implements HttpHandler{
         }
     }
 
+/** Method handles the request received, and then sends the proper status code back
+ * @param request request from the client
+ * @throws IOException
+ * @throws JSONException
+ * */
     public void handlePut(HttpExchange request) throws IOException, JSONException{
         String body = Utils.convert(request.getRequestBody());
         JSONObject data = new JSONObject(body);
@@ -38,7 +50,7 @@ public class AddMovie implements HttpHandler{
             System.out.println("movieId :" + movieId);
 
             try (Session session = Utils.driver.session()){
-                session.run("CREATE (m:Movie {name: $name, movieId: $movieId})", Values.parameters("name", name, "movieId", movieId));
+                session.run("CREATE (m:movie {name: $name, movieId: $movieId})", Values.parameters("name", name, "movieId", movieId));
                 System.out.println("Neo4j transaction ran successfully");
             } catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
@@ -50,6 +62,10 @@ public class AddMovie implements HttpHandler{
         request.sendResponseHeaders(statusCode, -1);
     }
 
+    /** Method validates the request received and returns the corresponding status code of the request
+     * @param data JSONObject obtained from the client's request
+     * @return status code of the request
+     * */
     private int validateRequestData(JSONObject data) {
         try {
             if (data.has("name") && data.has("movieId") && !duplicate(data.getString("movieId"))) {
@@ -63,9 +79,13 @@ public class AddMovie implements HttpHandler{
         }
     }
 
+    /** Method checks if the given information is a duplicate of an existing node
+     * @param movieId unique ID associated with a movie
+     * @throws Exception
+     * */
     private boolean duplicate(String movieId) throws Exception {
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
-            StatementResult results = tx.run("MATCH (m:Movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId));
+            StatementResult results = tx.run("MATCH (m:movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId));
             return results.hasNext();
         }
     }
