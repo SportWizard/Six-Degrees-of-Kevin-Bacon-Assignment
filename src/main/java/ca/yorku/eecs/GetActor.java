@@ -1,5 +1,6 @@
 package ca.yorku.eecs;
 
+import java.util.ArrayList;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.json.*;
@@ -92,17 +93,27 @@ public class GetActor implements HttpHandler {
 		
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-            	// TODO Change ActedIn to the appropriate relationship named in AddRelationship class
-            	// Match the actor with their movies, and return the one that match the actorId
-            	StatementResult results = tx.run("MATCH (a:Actor)-[:ActedIn]->(m:Movie) WHERE a.actorId = $actorId RETURN a.actorId AS actorId, a.name AS name, m.movieId AS movies", Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
+            	// Match the actor with their movies, and return the one that match the actorId OPTIONAL MATCH means that the pattern can be matched if it exists
+            	StatementResult results = tx.run("MATCH (a:Actor {actorId: $actorId}) OPTIONAL MATCH (a)-[r:ACTED_IN]->(m:Movie) RETURN a.actorId AS actorId, a.name AS name, m.movieId AS movies", Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
             	
             	JSONObject json = new JSONObject();
             	
             	Record record = results.next();
             	
             	json.put("actorId", record.get("actorId").asString()); 
-            	json.put("infoId", record.get("name").asString());
-            	json.put("hasRelationsihp", record.get("movies").asString());
+            	json.put("name", record.get("name").asString());
+            	
+            	ArrayList<String> movies = new ArrayList<String>();
+            	
+            	if (record.get("movies").asString() != null)
+            		movies.add(record.get("movies").asString());
+            	
+            	while (results.hasNext()) {
+            		record = results.next();
+            		movies.add(record.get("movies").asString());
+            	}
+            	
+            	json.put("movies", movies.toString());
             	
             	response = json.toString();
             }
