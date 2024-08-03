@@ -127,7 +127,7 @@ public class Utils {
                 	
                 	if (!record.get("movies").isNull()) {
                 		id = record.get("movies").toString();
-                		Movie movie = new Movie(id.substring(1, id.length()-1), node.getDistance() + 1, node);
+                		Movie movie = new Movie(id.substring(1, id.length()-1), node.getDistance(), node); // The distance will the same as the actor, but the distance doesn't matter
                 		
                 		// Check if the node has already been visited
                 		if (!visited.contains(movie)) {
@@ -139,7 +139,7 @@ public class Utils {
                 	while (results.hasNext()) {
                 		record = results.next();
                 		id = record.get("movies").toString();
-                		Movie movie = new Movie(id.substring(1, id.length()-1), node.getDistance() + 1, node);
+                		Movie movie = new Movie(id.substring(1, id.length()-1), node.getDistance(), node); // The distance will the same as the actor, but the distance doesn't matter
                 		
                 		if (!visited.contains(movie)) {
                 			queue.add(movie);
