@@ -86,7 +86,8 @@ public class Utils {
 		
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-            	StatementResult results = tx.run("MATCH (a:Actor) WHERE a.name = \"Kevin Bacon\" RETURN a.actorId AS actorId");
+            	String query = String.format("MATCH (a:%s) WHERE a.%s = \"Kevin Bacon\" RETURN a.%s AS actorId", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty);
+            	StatementResult results = tx.run(query);
             	
             	response = results.next().get("actorId").toString();
             }
