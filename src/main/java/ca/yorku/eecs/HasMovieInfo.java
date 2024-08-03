@@ -19,6 +19,12 @@ import com.sun.net.httpserver.HttpHandler;
  * This class is used to get actor from the database (neo4j)
  */
 public class HasMovieInfo implements HttpHandler {
+	// Allow quick change of labels and properties' name
+	private String movieLabel = "Movie";
+	private String infoLabel = "Info";
+	private String movieIdProperty = "movieId";
+	private String infoIdProperty = "infoId";
+	private String hasRelationship = "HAS";
 
 	/**
 	 * Confirming the correct method sent
@@ -51,7 +57,7 @@ public class HasMovieInfo implements HttpHandler {
 	    
 	    if (statusCode == 200) {
 	    	try {
-	    		response = this.HasRelationship(data.getString("movieId"), data.getString("infoId"));
+	    		response = this.HasRelationship(data.getString(this.movieIdProperty), data.getString(this.infoIdProperty));
 	    	}
 	    	catch (Exception e) {
 	    		System.err.println("Caught Exception: " + e.getMessage());
@@ -70,11 +76,11 @@ public class HasMovieInfo implements HttpHandler {
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-			if (!data.has("movieId") || !data.has("infoId"))
+			if (!data.has(this.movieIdProperty) || !data.has(this.infoIdProperty))
 	            return 400; // Bad request
 	        
-	        String movieId = data.getString("movieId");
-	        String infoId = data.getString("infoId");
+	        String movieId = data.getString(this.movieIdProperty);
+	        String infoId = data.getString(this.infoIdProperty);
 
 	        if (!this.findMovie(movieId) || !this.findInfo(infoId))
 	            return 404; // movie or info not found
@@ -98,7 +104,8 @@ public class HasMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Returns the movie that matches the movieId
-            	StatementResult results = tx.run("MATCH (m:Movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId)); // Run query
+            	String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", this.movieLabel, this.movieIdProperty);
+            	StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Run query
             	
             	// Check if results has any return
             	if (results.hasNext())
@@ -120,7 +127,8 @@ public class HasMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Returns the info that matches the infoId
-            	StatementResult results = tx.run("MATCH (i:Info) WHERE i.infoId = $infoId RETURN i", Values.parameters("infoId", infoId)); // Run query
+            	String query = String.format("MATCH (i:%s) WHERE i.%s = $infoId RETURN i", this.infoLabel, this.infoIdProperty);
+            	StatementResult results = tx.run(query, Values.parameters("infoId", infoId)); // Run query
             	
             	// Check if results has any return
             	if (results.hasNext())
@@ -143,7 +151,8 @@ public class HasMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Match movie with movieId and info with infoId. Then match the find the relationship and return true if it exists, else false. OPTIONAL MATCH means that the pattern can be matched if it exists
-            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId}), (i:Info {infoId: $infoId}) OPTIONAL MATCH (m)-[h:HAS]-(i) RETURN m.movieId AS movieId, i.infoId AS infoId, EXISTS ((m)-[:HAS]-(i)) AS hasRelationship", Values.parameters("movieId", movieId, "infoId", infoId));  // Use "AS" to rename key, since it will appear the name in the JSON 
+            	String query = String.format("MATCH (m:%s {%s: $movieId}), (i:%s {%s: $infoId}) OPTIONAL MATCH (m)-[h:%s]-(i) RETURN m.%s AS movieId, i.%s AS infoId, EXISTS ((m)-[:%s]-(i)) AS hasRelationship", this.movieLabel, this.movieIdProperty, this.infoLabel, this.infoIdProperty, this.hasRelationship, this.movieIdProperty, this.infoIdProperty, this.hasRelationship);
+            	StatementResult results = tx.run(query, Values.parameters("movieId", movieId, "infoId", infoId));  // Use "AS" to rename key, since it will appear the name in the JSON 
             	
             	JSONObject json = new JSONObject();
             	
