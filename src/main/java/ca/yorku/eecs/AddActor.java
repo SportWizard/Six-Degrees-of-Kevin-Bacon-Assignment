@@ -120,7 +120,7 @@ public class AddActor implements HttpHandler{
 	private void createActor(String name, String actorId) {
 	    try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
 	    	String query = String.format("CREATE (a:%s {%s: $name, %s: $actorId})", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty);
-	        session.run("CREATE (a:Actor {name: $name, actorId: $actorId})", Values.parameters("name", name, "actorId", actorId)); // Run the query in Neo4j
+	        session.run(query, Values.parameters("name", name, "actorId", actorId)); // Run the query in Neo4j
 	        System.out.println("Neo4j transaction successfully ran");
 	    }
 	}
