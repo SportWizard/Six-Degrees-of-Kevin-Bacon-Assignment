@@ -54,6 +54,6 @@ public class Node {
 		
 		Node other = (Node) obj;
 		
-		return this.id == other.id && this.distance == other.distance;
+		return this.id == other.id;
 	}
 }
