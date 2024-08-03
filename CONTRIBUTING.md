@@ -85,3 +85,4 @@
 - **Name the relationship with snake case and all characters should be in upper case**
   - Example:
     MATCH (m:Movie) WITH m MATCH (i:Info) WHERE m.movieId = "nm7001542" AND i.infoId = "ml12345678" CREATE (m)-[h:**HAS**]->(i);
+- **Add (instance) variables for the labels, properties and relationships for future-proof when modifying the name**
