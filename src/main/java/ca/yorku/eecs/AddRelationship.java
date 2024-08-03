@@ -10,12 +10,6 @@ import com.sun.net.httpserver.HttpHandler;
  * This class is used to add a relationship (ACTED_IN) between an actor and a movie in the database (neo4j)
  */
 public class AddRelationship implements HttpHandler {
-	// Allow quick change of labels and properties' name
-	private String actorLabel = "Actor";
-	private String movieLabel = "Movie";
-	private String actorIdProperty = "actorId";
-	private String movieIdProperty = "movieId";
-	private String actedInRelationship = "ACTED_IN";
 
     /**
      * Confirming the correct method sent
@@ -48,8 +42,8 @@ public class AddRelationship implements HttpHandler {
 
         // Validate and process data, then save to the database
         if (statusCode == 200) {
-            String actorId = data.getString(this.actorIdProperty);
-            String movieId = data.getString(this.movieIdProperty);
+            String actorId = data.getString(Utils.actorIdProperty);
+            String movieId = data.getString(Utils.movieIdProperty);
 
             System.out.println("Actor Id: " + actorId);
             System.out.println("Movie Id: " + movieId);
@@ -74,7 +68,7 @@ public class AddRelationship implements HttpHandler {
      */
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has(this.actorIdProperty) && data.has(this.movieIdProperty) && !this.duplicateRelationship(data.getString(this.actorIdProperty), data.getString(this.movieIdProperty)))
+            if (data.has(Utils.actorIdProperty) && data.has(Utils.movieIdProperty) && !this.duplicateRelationship(data.getString(Utils.actorIdProperty), data.getString(Utils.movieIdProperty)))
                 return 200; // OK
             else
                 return 400; // Bad request
@@ -95,7 +89,7 @@ public class AddRelationship implements HttpHandler {
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
                 // Returns the relationship that matches the actorId and movieId
-            	String query = String.format("MATCH (a:%s)-[r:%s]->(m:%s) WHERE a.%s = $actorId AND m.%s = $movieId RETURN r", this.actorLabel, this.actedInRelationship, this.movieLabel, this.actorIdProperty, this.movieIdProperty);
+            	String query = String.format("MATCH (a:%s)-[r:%s]->(m:%s) WHERE a.%s = $actorId AND m.%s = $movieId RETURN r", Utils.actorLabel, Utils.actedInRelationship, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty);
                 StatementResult results = tx.run(query, Values.parameters("actorId", actorId, "movieId", movieId)); // Run query
 
                 // Check if results has any return
@@ -114,7 +108,7 @@ public class AddRelationship implements HttpHandler {
      */
     private void createRelationship(String actorId, String movieId) {
         try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
-        	String query = String.format("MATCH (a:%s), (m:%s) WHERE a.%s = $actorId AND m.%s = $movieId CREATE (a)-[:%s]->(m)", this.actorLabel, this.movieLabel, this.actorIdProperty, this.movieIdProperty, this.actedInRelationship);
+        	String query = String.format("MATCH (a:%s), (m:%s) WHERE a.%s = $actorId AND m.%s = $movieId CREATE (a)-[:%s]->(m)", Utils.actorLabel, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty, Utils.actedInRelationship);
             session.run(query, Values.parameters("actorId", actorId, "movieId", movieId)); // Run the query in Neo4j
             System.out.println("Neo4j transaction successfully ran");
         }

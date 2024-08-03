@@ -18,10 +18,6 @@ import com.sun.net.httpserver.HttpHandler;
  * This class is used to add actor to the database (neo4j)
  */
 public class AddActor implements HttpHandler{
-	// Allow quick change of labels and properties' name
-	private String actorLabel = "Actor";
-	private String nameProperty = "name";
-	private String actorIdProperty = "actorId";
 
 	/**
 	 * Confirming the correct method sent
@@ -55,8 +51,8 @@ public class AddActor implements HttpHandler{
 	    
 	    // Validate and process data, then save to the database
 	    if (statusCode == 200) {
-	        String name = data.getString(this.nameProperty);
-	        String actorId = data.getString(this.actorIdProperty);
+	        String name = data.getString(Utils.actorNameProperty);
+	        String actorId = data.getString(Utils.actorIdProperty);
 	        
 	        System.out.println("Name: " + name);
 	        System.out.println("Actor Id: " + actorId);
@@ -83,7 +79,7 @@ public class AddActor implements HttpHandler{
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-		    if (data.has(this.nameProperty) && data.has(this.actorIdProperty) && !this.duplicate(data.getString(this.actorIdProperty)))
+		    if (data.has(Utils.actorNameProperty) && data.has(Utils.actorIdProperty) && !this.duplicate(data.getString(Utils.actorIdProperty)))
 		        return 200; // OK
 		    else
 		        return 400; // Bad request
@@ -104,7 +100,7 @@ public class AddActor implements HttpHandler{
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Returns the actor that matches the actorId
-            	String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", this.actorLabel, this.actorIdProperty);
+            	String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", Utils.actorLabel, Utils.actorIdProperty);
             	StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Run query
             	
             	// Check if results has any return
@@ -123,7 +119,7 @@ public class AddActor implements HttpHandler{
 	 */
 	private void createActor(String name, String actorId) {
 	    try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
-	    	String query = String.format("CREATE (a:%s {%s: $name, %s: $actorId})", this.actorLabel, this.nameProperty, this.actorIdProperty);
+	    	String query = String.format("CREATE (a:%s {%s: $name, %s: $actorId})", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty);
 	        session.run("CREATE (a:Actor {name: $name, actorId: $actorId})", Values.parameters("name", name, "actorId", actorId)); // Run the query in Neo4j
 	        System.out.println("Neo4j transaction successfully ran");
 	    }

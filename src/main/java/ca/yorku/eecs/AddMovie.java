@@ -11,11 +11,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 /* AddMovie class is used to add a valid movie node to the database */
 public class AddMovie implements HttpHandler{
-	// Allow quick change of labels and properties' name
-	private String movieLabel = "Movie";
-	private String nameProperty = "name";
-	private String movieIdProperty = "movieId";
-
+	
     //empty constructor
     public AddMovie(){}
 
@@ -47,14 +43,14 @@ public class AddMovie implements HttpHandler{
         int statusCode = validateRequestData(data);
 
         if (statusCode == 200) {
-            String name = data.getString(this.nameProperty);
-            String movieId = data.getString(this.movieIdProperty);
+            String name = data.getString(Utils.movieNameProperty);
+            String movieId = data.getString(Utils.movieIdProperty);
 
             System.out.println("name :" + name);
             System.out.println("movieId :" + movieId);
 
             try (Session session = Utils.driver.session()){
-            	String query = String.format("CREATE (m:%s {%s: $name, %s: $movieId})", this.movieLabel, this.nameProperty, this.movieIdProperty);
+            	String query = String.format("CREATE (m:%s {%s: $name, %s: $movieId})", Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
                 session.run(query, Values.parameters("name", name, "movieId", movieId));
                 System.out.println("Neo4j transaction ran successfully");
             } catch (Exception e) {
@@ -73,7 +69,7 @@ public class AddMovie implements HttpHandler{
      * */
     private int validateRequestData(JSONObject data) {
         try {
-            if (data.has(this.nameProperty) && data.has(this.movieIdProperty) && !duplicate(data.getString(this.movieIdProperty))) {
+            if (data.has(Utils.movieNameProperty) && data.has(Utils.movieIdProperty) && !duplicate(data.getString(Utils.movieIdProperty))) {
                 return 200;
             }
             return 400;
@@ -90,7 +86,7 @@ public class AddMovie implements HttpHandler{
      * */
     private boolean duplicate(String movieId) throws Exception {
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
-        	String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", this.movieLabel, this.movieIdProperty);
+        	String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", Utils.movieLabel, Utils.movieIdProperty);
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId));
             return results.hasNext();
         }
