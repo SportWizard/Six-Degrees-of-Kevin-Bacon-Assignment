@@ -18,6 +18,12 @@ import com.sun.net.httpserver.HttpHandler;
  * This class connects movie with info
  */
 public class AddMovieInfo implements HttpHandler {
+	// Allow quick change of labels and properties' name
+	private String movieLabel = "Movie";
+	private String infoLabel = "Info";
+	private String movieIdProperty = "movieId";
+	private String infoIdProperty = "infoId";
+	private String hasRelationship = "HAS";
 
 	/**
 	 * Confirming the correct method sent
@@ -50,8 +56,8 @@ public class AddMovieInfo implements HttpHandler {
 	    int statusCode = this.validateRequestData(data);
 	    
 	    if (statusCode == 200) {
-	        String movieId = data.getString("movieId");
-	        String infoId = data.getString("infoId");
+	        String movieId = data.getString(this.movieIdProperty);
+	        String infoId = data.getString(this.infoIdProperty);
 	        
 	        System.out.println("Movie Id: " + movieId);
 	        System.out.println("Info Id: " + infoId);
@@ -78,11 +84,11 @@ public class AddMovieInfo implements HttpHandler {
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-			if (!data.has("movieId") || !data.has("infoId"))
+			if (!data.has(this.movieIdProperty) || !data.has(this.infoIdProperty))
 	            return 400; // Bad request
 	        
-	        String movieId = data.getString("movieId");
-	        String infoId = data.getString("infoId");
+	        String movieId = data.getString(this.movieIdProperty);
+	        String infoId = data.getString(this.infoIdProperty);
 
 	        if (!this.findMovie(movieId) || !this.findInfo(infoId))
 	            return 404; // movie or info not found
@@ -109,7 +115,8 @@ public class AddMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Returns the connection where the movie matches the movieId and the info matches the infoId
-            	StatementResult results = tx.run("MATCH (m:Movie {movieId: $movieId})-[h:HAS]-(i:Info {infoId: $infoId}) RETURN h", Values.parameters("movieId", movieId, "infoId", infoId)); // Run query
+            	String query = String.format("MATCH (m:%s {%s: $movieId})-[h:%s]-(i:%s {%s: $infoId}) RETURN h", this.movieLabel, this.movieIdProperty, this.hasRelationship, this.infoLabel, this.infoIdProperty);
+            	StatementResult results = tx.run(query, Values.parameters("movieId", movieId, "infoId", infoId)); // Run query
             	
             	// Check if results has any return
             	if (results.hasNext())
@@ -131,7 +138,8 @@ public class AddMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Returns the movie that matches the movieId
-            	StatementResult results = tx.run("MATCH (m:Movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId)); // Run query
+            	String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", this.movieLabel, this.movieIdProperty);
+            	StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Run query
             	
             	// Check if results has any return
             	if (results.hasNext())
@@ -153,7 +161,8 @@ public class AddMovieInfo implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Returns the info that matches the infoId
-            	StatementResult results = tx.run("MATCH (i:Info) WHERE i.infoId = $infoId RETURN i", Values.parameters("infoId", infoId)); // Run query
+            	String query = String.format("MATCH (i:%s) WHERE i.%s = $infoId RETURN i", this.infoLabel, this.infoIdProperty);
+            	StatementResult results = tx.run(query, Values.parameters("infoId", infoId)); // Run query
             	
             	// Check if results has any return
             	if (results.hasNext())
@@ -172,7 +181,8 @@ public class AddMovieInfo implements HttpHandler {
 	private void createConnection(String movieId, String infoId) {
 	    try (Session session = Utils.driver.session()) {
 	    	// Get the movie and info that matches movieId and infoId, respectively. Then, connect movie to info
-	        session.run("MATCH (m:Movie) WITH m MATCH (i:Info) WHERE m.movieId = $movieId AND i.infoId = $infoId CREATE (m)-[h:HAS]->(i)", Values.parameters("movieId", movieId, "infoId", infoId)); // Run the query in Neo4j
+	    	String query = String.format("MATCH (m:%s) WITH m MATCH (i:%s) WHERE m.%s = $movieId AND i.%s = $infoId CREATE (m)-[h:%s]->(i)", this.movieLabel, this.infoLabel, this.movieIdProperty, this.infoIdProperty, this.hasRelationship);
+	        session.run(query, Values.parameters("movieId", movieId, "infoId", infoId)); // Run the query in Neo4j
 	        System.out.println("Neo4j transaction successfully ran");
 	    }
 	}
