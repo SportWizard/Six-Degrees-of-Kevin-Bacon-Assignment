@@ -20,6 +20,13 @@ import com.sun.net.httpserver.HttpHandler;
  * This class is used to get actor from the database (neo4j)
  */
 public class GetActor implements HttpHandler {
+	// Allow quick change of labels and properties' name
+	private String actorLabel = "Actor";
+	private String movieLabel = "Movie";
+	private String nameProperty = "name";
+	private String actorIdProperty = "actorId";
+	private String movieIdProperty = "movieId";
+	private String actedInRelationship = "ACTED_IN";
 
 	/**
 	 * Confirming the correct method sent
@@ -52,7 +59,7 @@ public class GetActor implements HttpHandler {
 	    
 	    if (statusCode == 200) {
 	    	try {
-	    		response = this.getActor(data.getString("actorId"));
+	    		response = this.getActor(data.getString(this.actorIdProperty));
 	    	}
 	    	catch (Exception e) {
 	    		System.err.println("Caught Exception: " + e.getMessage());
@@ -71,7 +78,7 @@ public class GetActor implements HttpHandler {
 	 */
 	private int validateRequestData(JSONObject data) throws JSONException {
 		try {
-		    if (data.has("actorId"))
+		    if (data.has(this.actorIdProperty))
 		        return 200; // OK
 		    else
 		        return 400; // Bad request
@@ -94,7 +101,8 @@ public class GetActor implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Match the actor with their movies, and return the one that match the actorId OPTIONAL MATCH means that the pattern can be matched if it exists
-            	StatementResult results = tx.run("MATCH (a:Actor {actorId: $actorId}) OPTIONAL MATCH (a)-[r:ACTED_IN]->(m:Movie) RETURN a.actorId AS actorId, a.name AS name, m.movieId AS movies", Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
+            	String query = String.format("MATCH (a:%s {%s: $actorId}) OPTIONAL MATCH (a)-[r:%s]->(m:%s) RETURN a.%s AS actorId, a.%s AS name, m.%s AS movies", this.actorLabel, this.actorIdProperty, this.actedInRelationship, this.movieLabel, this.actorIdProperty, this.nameProperty, this.movieIdProperty);
+            	StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
             	
             	JSONObject json = new JSONObject();
             	
