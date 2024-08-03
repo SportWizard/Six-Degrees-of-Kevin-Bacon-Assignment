@@ -59,6 +59,7 @@ public class Utils {
     	
     	try {
     		Node kevinBacon = new Actor(Utils.findKevinBaconId(), 0);
+    		kevinBacon.setPi(kevinBacon);
     		
     		System.out.println("Start BFS:");
     		
