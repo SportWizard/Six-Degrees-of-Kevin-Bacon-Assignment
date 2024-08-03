@@ -56,4 +56,9 @@ public class Node {
 		
 		return this.id == other.id;
 	}
+	
+	@Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
