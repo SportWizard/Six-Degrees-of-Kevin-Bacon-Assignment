@@ -60,22 +60,29 @@ public class Utils {
     	try {
     		Node kevinBacon = new Actor(Utils.findKevinBaconId(), 0);
     		
+    		System.out.println("Start BFS:");
+    		
     		queue.add(kevinBacon);
         	
         	while (!queue.isEmpty() && !found) {
         		node = queue.remove();
         		
+        		System.out.printf("Id: %s, Distance: %d, Pi: %s\n", node.getId(), node.getDistance(), node.getPi());
+        		
         		if (node.getId().equals(actorId))
-        			found = true;
+        			found = true; // The actor is found
         		else
-        			Utils.enqueueNeighbors(node, queue, visited);
+        			Utils.enqueueNeighbors(node, queue, visited); // Enqueue the neighbours
         	}
     	}
     	catch (Exception e) {
     		System.err.println(e.getMessage());
     	}
     	
-    	return node;
+    	if (found)
+    		return node;
+    	else
+    		return null;
     }
     
     /**
@@ -93,7 +100,7 @@ public class Utils {
             }
 		}
 		
-		return response;
+		return response.substring(1, response.length()-1); // Remove the quotation marks
     }
     
     /**
@@ -108,44 +115,19 @@ public class Utils {
             	StatementResult results;
             	String query;
             	Record record;
+            	String id;
             	
             	// Depending on the node, it performs different query
             	if (node instanceof Actor) {
             		// Match the actor that has the same id, and return all the movies that's connected to them
-            		query = String.format("MATCH (a:%s {%s: $actorId}) OPTIONAL MATCH (a)-[r:%s]->(m:%s) RETURN m.% AS movies", Utils.actorLabel, Utils.actorIdProperty, Utils.actedInRelationship, Utils.movieLabel, Utils.movieIdProperty);
+            		query = String.format("MATCH (a:%s {%s: $actorId}) OPTIONAL MATCH (a)-[r:%s]->(m:%s) RETURN m.%s AS movies", Utils.actorLabel, Utils.actorIdProperty, Utils.actedInRelationship, Utils.movieLabel, Utils.movieIdProperty);
             		results = tx.run(query, Values.parameters("actorId", node.getId()));
             		
             		record = results.next();
                 	
-                	if (!record.get("actorId").isNull()) {
-                		Actor actor = new Actor(record.get("actorId").toString(), node.getDistance() + 1, node);
-                		
-                		// Check if the node has already been visited
-                		if (!visited.contains(actor)) {
-                			queue.add(actor);
-                			visited.add(actor);
-                		}
-                	}
-                	
-                	while (results.hasNext()) {
-                		record = results.next();
-                		Actor actor = new Actor(record.get("actorId").toString(), node.getDistance() + 1, node);
-                		
-                		if (!visited.contains(actor)) {
-                			queue.add(actor);
-                			visited.add(actor);
-                		}
-                	}
-            	}
-            	else if (node instanceof Movie) {
-            		// Match the movie that has the same id, and return all the actors that's connected to it
-            		query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN a.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.actorIdProperty);
-            		results = tx.run(query, Values.parameters("movieId", node.getId()));
-                		
-            		record = results.next();
-                	
-                	if (!record.get("actorId").isNull()) {
-                		Movie movie = new Movie(record.get("movieId").toString(), node.getDistance() + 1, node);
+                	if (!record.get("movies").isNull()) {
+                		id = record.get("movies").toString();
+                		Movie movie = new Movie(id.substring(1, id.length()-1), node.getDistance() + 1, node);
                 		
                 		// Check if the node has already been visited
                 		if (!visited.contains(movie)) {
@@ -153,10 +135,40 @@ public class Utils {
                 			visited.add(movie);
                 		}
                 	}
+                	
+                	while (results.hasNext()) {
+                		record = results.next();
+                		id = record.get("movies").toString();
+                		Movie movie = new Movie(id.substring(1, id.length()-1), node.getDistance() + 1, node);
+                		
+                		if (!visited.contains(movie)) {
+                			queue.add(movie);
+                			visited.add(movie);
+                		}
+                	}
+            	}
+            	else if (node instanceof Movie) {
+            		// Match the movie that has the same id, and return all the actors that's connected to it
+            		query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN a.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.actorIdProperty);
+            		results = tx.run(query, Values.parameters("movieId", node.getId()));
+                	
+            		record = results.next();
+                	
+                	if (!record.get("actors").isNull()) {
+                		id = record.get("actors").toString();
+                		Actor actor = new Actor(id.substring(1, id.length()-1), node.getDistance() + 1, node);
+                		
+                		// Check if the node has already been visited
+                		if (!visited.contains(actor)) {
+                			queue.add(actor);
+                			visited.add(actor);
+                		}
+                	}
                     	
                 	while (results.hasNext()) {
                 		record = results.next();
-                		Actor actor = new Actor(record.get("actorId").toString(), node.getDistance() + 1, node);
+                		id = record.get("actors").toString();
+                		Actor actor = new Actor(id.substring(1, id.length()-1), node.getDistance() + 1, node);
                 		
                 		if (!visited.contains(actor)) {
                 			queue.add(actor);
