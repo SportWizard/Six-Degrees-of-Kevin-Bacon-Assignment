@@ -3,7 +3,7 @@ package ca.yorku.eecs;
 /**
  * This class is used to represent the node in neo4j
  */
-public abstract class Node {
+public class Node {
 	protected String id;
 	protected int distance;
 	protected Node pi; // The node that introduced the current node
@@ -44,5 +44,16 @@ public abstract class Node {
 	 * @param obj
 	 * @return Whether the two Object matches
 	 */
-	public abstract boolean equals(Object obj);
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		Node other = (Node) obj;
+		
+		return this.id == other.id && this.distance == other.distance;
+	}
 }
