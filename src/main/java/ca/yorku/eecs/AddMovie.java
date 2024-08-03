@@ -50,7 +50,7 @@ public class AddMovie implements HttpHandler{
             System.out.println("movieId :" + movieId);
 
             try (Session session = Utils.driver.session()){
-                session.run("CREATE (m:movie {name: $name, movieId: $movieId})", Values.parameters("name", name, "movieId", movieId));
+                session.run("CREATE (m:Movie {name: $name, movieId: $movieId})", Values.parameters("name", name, "movieId", movieId));
                 System.out.println("Neo4j transaction ran successfully");
             } catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
@@ -85,7 +85,7 @@ public class AddMovie implements HttpHandler{
      * */
     private boolean duplicate(String movieId) throws Exception {
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
-            StatementResult results = tx.run("MATCH (m:movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId));
+            StatementResult results = tx.run("MATCH (m:Movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId));
             return results.hasNext();
         }
     }
