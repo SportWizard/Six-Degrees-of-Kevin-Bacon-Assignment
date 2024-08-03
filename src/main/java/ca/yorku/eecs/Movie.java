@@ -9,6 +9,10 @@ public class Movie extends Node {
 		super(id, distance, pi);
 	}
 
+	/**
+	 * @param obj
+	 * @return Whether the two Object matches
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
