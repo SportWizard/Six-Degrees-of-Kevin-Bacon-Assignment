@@ -121,7 +121,10 @@ public class ComputeBaconNumber implements HttpHandler {
 		
 		if (node != null) {
 			JSONObject json = new JSONObject();
+			
 			json.put("baconNumber", node.getDistance());
+			
+			response = json.toString();
 		}
 		
 		return response;
