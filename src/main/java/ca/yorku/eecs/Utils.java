@@ -106,12 +106,14 @@ public class Utils {
     	try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	StatementResult results;
+            	String query;
             	Record record;
             	
             	// Depending on the node, it performs different query
             	if (node instanceof Actor) {
             		// Match the actor that has the same id, and return all the movies that's connected to them
-            		results = tx.run("MATCH (a:Actor {actorId: $actorId}) OPTIONAL MATCH (a)-[r:ACTED_IN]->(m:Movie) RETURN m.movieId AS movies", Values.parameters("actorId", node.getId()));
+            		query = String.format("MATCH (a:%s {%s: $actorId}) OPTIONAL MATCH (a)-[r:%s]->(m:%s) RETURN m.% AS movies", Utils.actorLabel, Utils.actorIdProperty, Utils.actedInRelationship, Utils.movieLabel, Utils.movieIdProperty);
+            		results = tx.run(query, Values.parameters("actorId", node.getId()));
             		
             		record = results.next();
                 	
@@ -137,32 +139,29 @@ public class Utils {
             	}
             	else if (node instanceof Movie) {
             		// Match the movie that has the same id, and return all the actors that's connected to it
-            		results = tx.run("MATCH (m:movie {movieId: $movieId}) OPTIONAL MATCH (a:Actor)-[r:ACTED_IN]->(m) RETURN a.actorId AS actors", Values.parameters("movieId", node.getId()));
-            		
-            		if (node instanceof Movie) {
-                		results = tx.run("MATCH (a:Actor {actorId: $actorId}) OPTIONAL MATCH (a)-[r:ACTED_IN]->(m:Movie) RETURN m.movieId AS movies", Values.parameters("actorId", node.getId()));
+            		query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN a.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.actorIdProperty);
+            		results = tx.run(query, Values.parameters("movieId", node.getId()));
                 		
+            		record = results.next();
+                	
+                	if (!record.get("actorId").isNull()) {
+                		Movie movie = new Movie(record.get("movieId").toString(), node.getDistance() + 1, node);
+                		
+                		// Check if the node has already been visited
+                		if (!visited.contains(movie)) {
+                			queue.add(movie);
+                			visited.add(movie);
+                		}
+                	}
+                    	
+                	while (results.hasNext()) {
                 		record = results.next();
-                    	
-                    	if (!record.get("actorId").isNull()) {
-                    		Movie movie = new Movie(record.get("movieId").toString(), node.getDistance() + 1, node);
-                    		
-                    		// Check if the node has already been visited
-                    		if (!visited.contains(movie)) {
-                    			queue.add(movie);
-                    			visited.add(movie);
-                    		}
-                    	}
-                    	
-                    	while (results.hasNext()) {
-                    		record = results.next();
-                    		Actor actor = new Actor(record.get("actorId").toString(), node.getDistance() + 1, node);
-                    		
-                    		if (!visited.contains(actor)) {
-                    			queue.add(actor);
-                    			visited.add(actor);
-                    		}
-                    	}
+                		Actor actor = new Actor(record.get("actorId").toString(), node.getDistance() + 1, node);
+                		
+                		if (!visited.contains(actor)) {
+                			queue.add(actor);
+                			visited.add(actor);
+                		}
                 	}
             	}
             }
