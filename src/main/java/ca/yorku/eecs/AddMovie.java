@@ -44,7 +44,7 @@ public class AddMovie implements HttpHandler{
 
         if (statusCode == 200) {
             String name = data.getString("name");
-            String movieId = data.getString("movieID");
+            String movieId = data.getString("movieId");
 
             System.out.println("name :" + name);
             System.out.println("movieId :" + movieId);
