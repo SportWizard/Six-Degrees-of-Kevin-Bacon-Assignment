@@ -123,13 +123,7 @@ public class ComputeBaconPath implements HttpHandler {
 		if (node != null) {
 			JSONObject json = new JSONObject();
 			
-			ArrayList<String> path = new ArrayList<String>();
-			ca.yorku.eecs.Node curNode = node;
-			
-			while (curNode.getPi() != null) {
-				path.add(curNode.getId());
-				curNode = curNode.getPi();
-			}
+			ArrayList<String> path = this.getPath(node);
 			
 			json.put("baconPath", path.toString());
 			
@@ -137,6 +131,25 @@ public class ComputeBaconPath implements HttpHandler {
 		}
 		
 		return response;
+	}
+	
+	/**
+	 * @param node
+	 * @return The path from the actor to Kevin Bacon
+	 */
+	private ArrayList<String> getPath(ca.yorku.eecs.Node node) {
+		ArrayList<String> path = new ArrayList<String>();
+		ca.yorku.eecs.Node curNode = node;
+		
+		// Add the id of the nodes in the path
+		while (curNode != curNode.getPi()) {
+			path.add(curNode.getId());
+			curNode = curNode.getPi();
+		}
+		
+		path.add(curNode.getId()); // Add Kevin Bacon's id
+		
+		return path;
 	}
 	
 	/**
