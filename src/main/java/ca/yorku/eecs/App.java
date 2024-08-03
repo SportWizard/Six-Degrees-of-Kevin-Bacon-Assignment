@@ -19,6 +19,7 @@ public class App {
         server.createContext("/api/v1/getActor", new GetActor());
         server.createContext("/api/v1/hasMovieInfo", new HasMovieInfo());
         server.createContext("/api/v1/computeBaconNumber", new ComputeBaconNumber());
+        server.createContext("/api/v1/computeBaconPath", new ComputeBaconPath());
         
         server.start();
         System.out.printf("Server started on port %d...\n", PORT);
