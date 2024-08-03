@@ -19,6 +19,10 @@ public class Node {
 		this.pi = pi;
 	}
 	
+	public void setPi(Node pi) {
+		this.pi = pi;
+	}
+	
 	/**
 	 * @return The id of the node
 	 */
