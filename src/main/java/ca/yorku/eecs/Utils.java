@@ -25,6 +25,21 @@ public class Utils {
     public static Config config = Config.builder().withoutEncryption().build();
     public static Driver driver = GraphDatabase.driver(uriDb, AuthTokens.basic("neo4j","12345678"), config);
     
+    // Allow quick change of labels, properties and relationship's name
+    public static final String actorLabel = "actor";
+	public static final String actorNameProperty = "name";
+	public static final String actorIdProperty = "actorId";
+	
+	public static final String movieLabel = "movie";
+	public static final String movieNameProperty = "name";
+	public static final String movieIdProperty = "movieId";
+	
+	public static final String infoLabel = "info";
+	public static final String infoIdProperty = "infoId";
+	
+	public static final String hasRelationship = "HAS";
+	public static final String actedInRelationship = "ACTED_IN";
+    
     public static String convert(InputStream inputStream) throws IOException {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             return br.lines().collect(Collectors.joining(System.lineSeparator()));

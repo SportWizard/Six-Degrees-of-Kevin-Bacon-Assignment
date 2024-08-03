@@ -11,7 +11,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 /* AddMovie class is used to add a valid movie node to the database */
 public class AddMovie implements HttpHandler{
-
+	
     //empty constructor
     public AddMovie(){}
 
@@ -43,14 +43,15 @@ public class AddMovie implements HttpHandler{
         int statusCode = validateRequestData(data);
 
         if (statusCode == 200) {
-            String name = data.getString("name");
-            String movieId = data.getString("movieId");
+            String name = data.getString(Utils.movieNameProperty);
+            String movieId = data.getString(Utils.movieIdProperty);
 
             System.out.println("name :" + name);
             System.out.println("movieId :" + movieId);
 
             try (Session session = Utils.driver.session()){
-                session.run("CREATE (m:Movie {name: $name, movieId: $movieId})", Values.parameters("name", name, "movieId", movieId));
+            	String query = String.format("CREATE (m:%s {%s: $name, %s: $movieId})", Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
+                session.run(query, Values.parameters("name", name, "movieId", movieId));
                 System.out.println("Neo4j transaction ran successfully");
             } catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
@@ -68,7 +69,7 @@ public class AddMovie implements HttpHandler{
      * */
     private int validateRequestData(JSONObject data) {
         try {
-            if (data.has("name") && data.has("movieId") && !duplicate(data.getString("movieId"))) {
+            if (data.has(Utils.movieNameProperty) && data.has(Utils.movieIdProperty) && !duplicate(data.getString(Utils.movieIdProperty))) {
                 return 200;
             }
             return 400;
@@ -85,7 +86,8 @@ public class AddMovie implements HttpHandler{
      * */
     private boolean duplicate(String movieId) throws Exception {
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
-            StatementResult results = tx.run("MATCH (m:Movie) WHERE m.movieId = $movieId RETURN m", Values.parameters("movieId", movieId));
+        	String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", Utils.movieLabel, Utils.movieIdProperty);
+            StatementResult results = tx.run(query, Values.parameters("movieId", movieId));
             return results.hasNext();
         }
     }
