@@ -1,9 +1,9 @@
 package ca.yorku.eecs;
 
-public class Node {
-	private String id;
-	private int distance;
-	private Node pi; // The node that introduced the current node
+public abstract class Node {
+	protected String id;
+	protected int distance;
+	protected Node pi; // The node that introduced the current node
 	
 	public Node(String id, int distance) {
 		this.id = id;
@@ -27,4 +27,6 @@ public class Node {
 	public Node getPi() {
 		return this.pi;
 	}
+	
+	public abstract boolean equals(Object obj);
 }
