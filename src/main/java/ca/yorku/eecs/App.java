@@ -13,6 +13,7 @@ public class App {
         server.createContext("/api/v1/addActor", new AddActor());
         server.createContext("/api/v1/addMovieInfo", new AddMovieInfo());
         server.createContext("/api/v1/addMovie", new AddMovie());
+        server.createContext("/api/v1/addRelationship", new AddRelationship());
 
         // Get methods
         server.createContext("/api/v1/getActor", new GetActor());
