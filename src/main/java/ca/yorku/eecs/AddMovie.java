@@ -66,8 +66,9 @@ public class AddMovie implements HttpHandler{
     /** Method validates the request received and returns the corresponding status code of the request
      * @param data JSONObject obtained from the client's request
      * @return status code of the request
+     * @throws JSONException
      * */
-    private int validateRequestData(JSONObject data) {
+    private int validateRequestData(JSONObject data) throws JSONException {
         try {
             if (data.has(Utils.movieNameProperty) && data.has(Utils.movieIdProperty) && !duplicate(data.getString(Utils.movieIdProperty))) {
                 return 200;
