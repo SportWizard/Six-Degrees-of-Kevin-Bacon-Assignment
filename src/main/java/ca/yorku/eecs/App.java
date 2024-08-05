@@ -21,6 +21,7 @@ public class App {
         server.createContext("/api/v1/computeBaconNumber", new ComputeBaconNumber());
         server.createContext("/api/v1/computeBaconPath", new ComputeBaconPath());
         server.createContext("/api/v1/getMovie", new GetMovie());
+        server.createContext("/api/v1/hasRelationship", new HasRelationship());
 
 
         server.start();
