@@ -35,8 +35,12 @@ public class HasRelationship implements HttpHandler {
      * @throws JSONException
      */
     public void handleGet(HttpExchange request) throws IOException, JSONException {
-        String body = Utils.convert(request.getRequestBody()); // Convert request to String
-        JSONObject data = new JSONObject(body); // Convert JSON to an object
+        String queryParams = request.getRequestURI().getQuery(); // Get query parameters from URL
+        JSONObject data = new JSONObject();
+        for (String param : queryParams.split("&")) {
+            String[] keyValue = param.split("=");
+            data.put(keyValue[0], keyValue[1]);
+        }
 
         int statusCode = this.validateRequestData(data);
 
@@ -121,4 +125,6 @@ public class HasRelationship implements HttpHandler {
         request.getResponseBody().write(bytes);
         request.getResponseBody().close();
     }
+}
+
 }
