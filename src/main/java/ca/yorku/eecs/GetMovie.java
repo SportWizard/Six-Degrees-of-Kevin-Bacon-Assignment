@@ -83,7 +83,7 @@ public class GetMovie implements HttpHandler {
         String response = null;
 
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
-            String query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN m.%s AS movieId, m.%s AS name, m.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.movieIdProperty, Utils.movieNameProperty, Utils.actorIdProperty);
+            String query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN m.%s AS movieId, m.%s AS name, a.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.movieIdProperty, Utils.movieNameProperty, Utils.actorIdProperty);
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
