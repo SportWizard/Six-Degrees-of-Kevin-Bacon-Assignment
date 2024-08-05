@@ -77,13 +77,13 @@ public class GetMovie implements HttpHandler {
 
     /**Retrieves the node of the movie with the given movieId
      * @param movieId the id associated with the given movie
-     * @returns the movie with the matching movieId, its name, and a list of actors in the movie
+     * @return the movie with the matching movieId, its name, and a list of actors in the movie
      * @throws Exception*/
     private String getMovie(String movieId) throws Exception {
         String response = null;
 
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
-            String query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (m)-[h:%s]->(a:%s) RETURN m.%s AS movieId, m.%s AS name, m.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.hasRelationship, Utils.actorLabel, Utils.movieIdProperty, Utils.movieNameProperty, Utils.actorIdProperty);
+            String query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN m.%s AS movieId, m.%s AS name, m.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.movieIdProperty, Utils.movieNameProperty, Utils.actorIdProperty);
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
