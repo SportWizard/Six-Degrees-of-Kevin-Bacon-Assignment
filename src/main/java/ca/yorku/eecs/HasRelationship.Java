@@ -126,5 +126,3 @@ public class HasRelationship implements HttpHandler {
         request.getResponseBody().close();
     }
 }
-
-}
