@@ -48,6 +48,10 @@ public class GetMovie implements HttpHandler {
         if (statusCode == 200) {
             try {
                 response = getMovie(data.getString(Utils.movieIdProperty));
+
+                if (response == null) {
+                    statusCode = 404;
+                }
             }
             catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
