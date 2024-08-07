@@ -54,8 +54,9 @@ public class AddRelationship implements HttpHandler {
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
             }
-        } else
+        } else {
             System.out.println("Bad request: The request format is incorrect or required parameters are missing or duplicate relationship");
+        }
 
         this.sendResponse(request, statusCode);
     }
@@ -63,19 +64,54 @@ public class AddRelationship implements HttpHandler {
     /**
      * Validate the request sent by the client
      * @param data
-     * @return Status code of whether the request was OK (200) or invalid (400)
+     * @return Status code of whether the request was OK (200) or invalid (400 or 404)
      * @throws JSONException 
      */
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has(Utils.actorIdProperty) && data.has(Utils.movieIdProperty) && !this.duplicateRelationship(data.getString(Utils.actorIdProperty), data.getString(Utils.movieIdProperty)))
-                return 200; // OK
-            else
+            if (!data.has(Utils.actorIdProperty) || !data.has(Utils.movieIdProperty))
                 return 400; // Bad request
-        } catch (Exception e) { // Catch exception from duplicate
+            
+            String actorId = data.getString(Utils.actorIdProperty);
+            String movieId = data.getString(Utils.movieIdProperty);
+
+            if (!this.entityExists(actorId, Utils.actorLabel, Utils.actorIdProperty) || 
+                !this.entityExists(movieId, Utils.movieLabel, Utils.movieIdProperty))
+                return 404; // Actor or movie not found
+
+            if (this.duplicateRelationship(actorId, movieId))
+                return 400; // Relationship already established
+
+            return 200; // OK
+        } catch (Exception e) { // Catch exception from duplicate, findMovie, and findActor
             System.err.print("Caught Exception: " + e.getMessage());
             return 500; // Internal Server Error
         }
+    }
+
+    /**
+     * Check if an entity (actor or movie) exists in the database
+     * @param id The id of the entity
+     * @param label The label of the entity (Actor or Movie)
+     * @param idProperty The property name of the id
+     * @return boolean indicating if the entity exists
+     */
+    private boolean entityExists(String id, String label, String idProperty) throws Exception {
+        boolean exists = false;
+
+        try (Session session = Utils.driver.session()) {
+            try (Transaction tx = session.beginTransaction()) {
+                // Query to check if the entity exists
+                String query = String.format("MATCH (e:%s) WHERE e.%s = $id RETURN e", label, idProperty);
+                StatementResult result = tx.run(query, Values.parameters("id", id));
+
+                if (result.hasNext()) {
+                    exists = true;
+                }
+            }
+        }
+
+        return exists;
     }
 
     /**
@@ -89,7 +125,8 @@ public class AddRelationship implements HttpHandler {
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
                 // Returns the relationship that matches the actorId and movieId
-            	String query = String.format("MATCH (a:%s)-[r:%s]->(m:%s) WHERE a.%s = $actorId AND m.%s = $movieId RETURN r", Utils.actorLabel, Utils.actedInRelationship, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty);
+                String query = String.format("MATCH (a:%s)-[r:%s]->(m:%s) WHERE a.%s = $actorId AND m.%s = $movieId RETURN r", 
+                                             Utils.actorLabel, Utils.actedInRelationship, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty);
                 StatementResult results = tx.run(query, Values.parameters("actorId", actorId, "movieId", movieId)); // Run query
 
                 // Check if results has any return
@@ -108,7 +145,8 @@ public class AddRelationship implements HttpHandler {
      */
     private void createRelationship(String actorId, String movieId) {
         try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
-        	String query = String.format("MATCH (a:%s), (m:%s) WHERE a.%s = $actorId AND m.%s = $movieId CREATE (a)-[:%s]->(m)", Utils.actorLabel, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty, Utils.actedInRelationship);
+            String query = String.format("MATCH (a:%s), (m:%s) WHERE a.%s = $actorId AND m.%s = $movieId CREATE (a)-[:%s]->(m)", 
+                                         Utils.actorLabel, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty, Utils.actedInRelationship);
             session.run(query, Values.parameters("actorId", actorId, "movieId", movieId)); // Run the query in Neo4j
             System.out.println("Neo4j transaction successfully ran");
         }
