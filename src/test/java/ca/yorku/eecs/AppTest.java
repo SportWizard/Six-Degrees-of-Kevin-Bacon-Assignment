@@ -60,6 +60,7 @@ public class AppTest extends TestCase {
     		OutputStream os = connection.getOutputStream();
     		String input = json.toString();
 		    os.write(input.getBytes());
+		    os.flush();
 		    os.close();
     	}
     	catch (Exception e) {
@@ -90,6 +91,7 @@ public class AppTest extends TestCase {
 			OutputStream os = connection.getOutputStream();
 			String input = json.toString();
 		    os.write(input.getBytes());
+		    os.flush();
 		    os.close();
     	}
     	catch (Exception e) {
@@ -116,6 +118,7 @@ public class AppTest extends TestCase {
 			OutputStream os = connection.getOutputStream();
 			String input = json.toString();
 		    os.write(input.getBytes());
+		    os.flush();
 		    os.close();
     	}
     	catch (Exception e) {
@@ -391,108 +394,66 @@ public class AppTest extends TestCase {
 		String movieId = "nm7001453";
     	
     	try {
-    		URL url = null;
-    		JSONObject json;
-    		String input;
-    		OutputStream os;
     		int statusCode;
     		int expected;
     		
     		// Add actor
-    		url = new URL(this.rootPath + "/api/v1/addActor");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", actorName);
-    		json.put("actorId", actorId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		connection = this.addActor(actorName, actorId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(this.rootPath + "/api/v1/addMovie");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", movieName);
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addMovie(movieName, movieId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(this.rootPath + "/api/v1/addRelationship");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("actorId", actorId);
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addRelationship(actorId, movieId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code add relationship", expected, statusCode);
 		    
 		    // Get Actor
-//		    url = new URL(this.rootPath + "/api/v1/getActor");
-//		    connection = (HttpURLConnection) url.openConnection();
-//		    connection.setRequestMethod("GET");
-//		    connection.setRequestProperty("Content-Type", "application/json");
-//		    connection.setDoInput(true); // For reading from the server
-//		    
-//		    json = new JSONObject();
-//    		json.put("actorId", actorId);
-//    		
-//    		os = connection.getOutputStream();
-//    		input = json.toString();
-//		    os.write(input.getBytes());
-//		    os.close();
-//
-//		    // Get response
-//		    statusCode = connection.getResponseCode();
-//		    expected = 200;
-//		    assertEquals("Incorrect status code for get actor", expected, statusCode);
-//		    
-//		    StringBuffer response = null;
-//		    
-//		    if (statusCode == 200) {
-//				BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//				String inputLine;
-//				response = new StringBuffer();
-//
-//				while ((inputLine = in.readLine()) != null)
-//					response.append(inputLine);
-//				
-//				in.close();
-//			}
-//		    
-//		    String expectedString = String.format("{\"actorId\": \"%s\", \"name\": \"%s\", \"movies\": [\"%s\"]}", actorId, actorName, movieId);
-//		    assertEquals("Incorrect response for get actor", expectedString, response);
+		    URL url = new URL(this.rootPath + "/api/v1/getActor");
+		    connection = (HttpURLConnection) url.openConnection();
+
+		    connection.setRequestMethod("GET");
+		    connection.setRequestProperty("Content-Type", "application/json");
+		    connection.setDoOutput(true);
+
+		    JSONObject json = new JSONObject();
+		    json.put("actorId", actorId);
+
+		    OutputStream os = connection.getOutputStream();
+		    String input = json.toString();
+		    os.write(input.getBytes());
+		    os.flush();
+		    os.close();
+
+		    statusCode = connection.getResponseCode();
+		    expected = 200;
+		    assertEquals("Incorrect status code for get actor", expected, statusCode);
+
+		    StringBuffer response = new StringBuffer();
+
+		    if (statusCode == 200) {
+		        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		        String inputLine;
+
+		        while ((inputLine = in.readLine()) != null) {
+		            response.append(inputLine);
+		        }
+		        
+		        in.close();
+		    }
+		    
+		    String expectedString = String.format("{\"actorId\": \"%s\", \"name\": \"%s\", \"movies\": [\"%s\"]}", actorId, actorName, movieId);
+		    assertEquals("Incorrect response for get actor", expectedString, response);
     	}
     	catch (Exception e) {
     		e.printStackTrace();
