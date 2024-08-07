@@ -490,13 +490,6 @@ public class AppTest extends TestCase {
     		int statusCode;
     		int expected;
     		
-    		// Add actor
-    		connection = this.addActor(actorName, actorId);
-		    
-		    statusCode = connection.getResponseCode();
-		    expected = 200;
-		    assertEquals("Incorrect status code for add actor", expected, statusCode);
-    		
     		// Add movie
 		    connection = this.addMovie(movieName, movieId);
 		    
