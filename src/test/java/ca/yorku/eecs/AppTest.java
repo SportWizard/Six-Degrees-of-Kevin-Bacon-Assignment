@@ -39,14 +39,9 @@ public class AppTest extends TestCase {
     public static Test suite() {
         return new TestSuite( AppTest.class );
     }
-	
-	/**
-     * Verifies that adding an actor with valid details returns a 200 status code
-     */
-    public void testAddActorPass() { // Name of the test method must start with test
+    
+    private HttpURLConnection addActor(String actorName, String actorId) throws Exception {
     	HttpURLConnection connection = null;
-    	String actorName = "Denzel Washington";
-		String actorId = "nm1001213";
     	
     	try {
     		// Define the URL for the API endpoint
@@ -66,7 +61,82 @@ public class AppTest extends TestCase {
     		String input = json.toString();
 		    os.write(input.getBytes());
 		    os.close();
-		    
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception :" + e.getMessage());
+    	}
+    	
+		return connection;
+    }
+    
+    private HttpURLConnection addMovie(String movieName, String movieId) throws Exception {
+    	HttpURLConnection connection = null;
+    	
+    	try {
+	    	// Define the URL for the API endpoint
+			URL url = new URL(this.rootPath + "/api/v1/addMovie");
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("PUT");
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setDoOutput(true);
+			
+			// Add movie
+			JSONObject json = new JSONObject();
+			json.put("name", movieName);
+			json.put("movieId", movieId);
+			
+			// Send request
+			OutputStream os = connection.getOutputStream();
+			String input = json.toString();
+		    os.write(input.getBytes());
+		    os.close();
+    	}
+    	catch (Exception e) {
+    		throw new Exception(e);
+    	}
+    	
+    	return connection;
+    }
+    
+    private HttpURLConnection addRelationship(String actorId, String movieId) throws Exception {
+    	HttpURLConnection connection;
+    	
+    	try {
+	    	URL url = new URL(this.rootPath + "/api/v1/addRelationship");
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("PUT");
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setDoOutput(true);
+			
+			JSONObject json = new JSONObject();
+			json.put("actorId", actorId);
+			json.put("movieId", movieId);
+			
+			OutputStream os = connection.getOutputStream();
+			String input = json.toString();
+		    os.write(input.getBytes());
+		    os.close();
+    	}
+    	catch (Exception e) {
+    		throw new Exception(e);
+    	}
+    	
+    	return connection;
+    }
+	
+	/**
+     * Verifies that adding an actor with valid details returns a 200 status code
+     */
+    public void testAddActorPass() { // Name of the test method must start with test
+    	HttpURLConnection connection = null;
+    	String actorName = "Denzel Washington";
+		String actorId = "nm1001213";
+    	
+		try {
+			// Add actor
+			connection = this.addActor(actorName, actorId);
+			
 		    // Get response
 		    int statusCode = connection.getResponseCode();
 		    int expected = 200;
@@ -100,22 +170,8 @@ public class AppTest extends TestCase {
     	String actorId = "nm1001213";
     	
     	try {
-    		// Define the URL for the API endpoint
-    		URL url = new URL(this.rootPath + "/api/v1/addActor");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		// Add actor
-    		JSONObject json = new JSONObject();
-    		json.put("actorId", actorId);
-    		
-    		// Send request
-    		OutputStream os = connection.getOutputStream();
-    		String input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		// Add Actor
+    		connection = this.addActor(null, actorId);
 		    
 		    // Get response
 		    int statusCode = connection.getResponseCode();
@@ -150,23 +206,8 @@ public class AppTest extends TestCase {
 		String movieId = "nm7001453";
     	
     	try {
-    		// Define the URL for the API endpoint
-    		URL url = new URL(this.rootPath + "/api/v1/addMovie");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
     		// Add movie
-    		JSONObject json = new JSONObject();
-    		json.put("name", movieName);
-    		json.put("movieId", movieId);
-    		
-    		// Send request
-    		OutputStream os = connection.getOutputStream();
-    		String input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		connection = this.addMovie(movieName, movieId);
 		    
 		    // Get response
 		    int statusCode = connection.getResponseCode();
@@ -201,22 +242,8 @@ public class AppTest extends TestCase {
     	String movieName = "Parasite";
     	
     	try {
-    		// Define the URL for the API endpoint
-    		URL url = new URL(this.rootPath + "/api/v1/addMovie");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
     		// Add movie
-    		JSONObject json = new JSONObject();
-    		json.put("name", movieName);
-    		
-    		// Send request
-    		OutputStream os = connection.getOutputStream();
-    		String input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		connection = this.addMovie(movieName, null);
 		    
 		    // Get response
 		    int statusCode = connection.getResponseCode();
@@ -253,68 +280,26 @@ public class AppTest extends TestCase {
 		String movieId = "nm7001453";
     	
     	try {
-    		URL url = null;
-    		JSONObject json;
-    		String input;
-    		OutputStream os;
     		int statusCode;
     		int expected;
     		
     		// Add actor
-    		url = new URL(this.rootPath + "/api/v1/addActor");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", actorName);
-    		json.put("actorId", actorId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		connection = this.addActor(actorName, actorId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(this.rootPath + "/api/v1/addMovie");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", movieName);
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addMovie(movieName, movieId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(this.rootPath + "/api/v1/addRelationship");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("actorId", actorId);
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    
+		    connection = this.addRelationship(actorId, movieId);
 		    
 		    // Get response
 		    statusCode = connection.getResponseCode();
@@ -351,67 +336,25 @@ public class AppTest extends TestCase {
 		String movieId = "nm7001453";
     	
     	try {
-    		URL url = null;
-    		JSONObject json;
-    		String input;
-    		OutputStream os;
     		int statusCode;
     		int expected;
     		
     		// Add actor
-    		url = new URL(this.rootPath + "/api/v1/addActor");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", actorName);
-    		json.put("actorId", actorId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		connection = this.addActor(actorName, actorId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(this.rootPath + "/api/v1/addMovie");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", movieName);
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addMovie(movieName, movieId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(this.rootPath + "/api/v1/addRelationship");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addRelationship(null, movieId);
 		    
 		    // Get response
 		    statusCode = connection.getResponseCode();
@@ -583,68 +526,25 @@ public class AppTest extends TestCase {
 		String movieId = "nm7001453";
     	
     	try {
-    		URL url = null;
-    		JSONObject json;
-    		String input;
-    		OutputStream os;
     		int statusCode;
     		int expected;
     		
     		// Add actor
-    		url = new URL(this.rootPath + "/api/v1/addActor");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", actorName);
-    		json.put("actorId", actorId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+    		connection = this.addActor(actorName, actorId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(this.rootPath + "/api/v1/addMovie");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("name", movieName);
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addMovie(movieName, movieId);
 		    
 		    statusCode = connection.getResponseCode();
 		    expected = 200;
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(this.rootPath + "/api/v1/addRelationship");
-    		connection = (HttpURLConnection) url.openConnection();
-    		connection.setRequestMethod("PUT");
-    		connection.setRequestProperty("Content-Type", "application/json");
-    		connection.setDoOutput(true);
-    		
-    		json = new JSONObject();
-    		json.put("actorId", "nm1234567"); // Not existing actorId
-    		json.put("movieId", movieId);
-    		
-    		os = connection.getOutputStream();
-    		input = json.toString();
-		    os.write(input.getBytes());
-		    os.close();
+		    connection = this.addRelationship(actorId, movieId);
 		    
 		    // Get response
 		    statusCode = connection.getResponseCode();
