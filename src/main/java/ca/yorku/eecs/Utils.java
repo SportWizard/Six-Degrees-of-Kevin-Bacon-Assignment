@@ -40,7 +40,13 @@ public class Utils {
 	public static final String hasRelationship = "HAS";
 	public static final String actedInRelationship = "ACTED_IN";
     
-    public static String convert(InputStream inputStream) throws IOException {
+	public static String imdbRatingProperty;
+	public static String mpaaRatingProperty;
+	public static String yearProperty;
+	public static String infoId;
+
+
+	public static String convert(InputStream inputStream) throws IOException {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             return br.lines().collect(Collectors.joining(System.lineSeparator()));
         }
