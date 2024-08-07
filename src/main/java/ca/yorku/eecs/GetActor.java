@@ -53,6 +53,10 @@ public class GetActor implements HttpHandler {
 	    if (statusCode == 200) {
 	    	try {
 	    		response = this.getActor(data.getString(Utils.actorIdProperty));
+	    		
+	    		// Check if there is an actor in the database that matches with actorId
+	    		if (response == null)
+	    			statusCode = 404;
 	    	}
 	    	catch (Exception e) {
 	    		System.err.println("Caught Exception: " + e.getMessage());
@@ -94,29 +98,32 @@ public class GetActor implements HttpHandler {
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Match the actor with their movies, and return the one that match the actorId OPTIONAL MATCH means that the pattern can be matched if it exists
-            	String query = String.format("MATCH (a:%s {%s: $actorId}) OPTIONAL MATCH (a)-[r:%s]->(m:%s) RETURN a.%s AS actorId, a.%s AS name, m.%s AS movies", Utils.actorLabel, Utils.actorIdProperty, Utils.actedInRelationship, Utils.movieLabel, Utils.actorIdProperty, Utils.actorNameProperty, Utils.movieIdProperty);
+            	String query = String.format("OPTIONAL MATCH (a:%s {%s: $actorId}) OPTIONAL MATCH (a)-[r:%s]->(m:%s) RETURN a.%s AS actorId, a.%s AS name, m.%s AS movies", Utils.actorLabel, Utils.actorIdProperty, Utils.actedInRelationship, Utils.movieLabel, Utils.actorIdProperty, Utils.actorNameProperty, Utils.movieIdProperty);
             	StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Use "AS" to rename key, since it will appear the name in the JSON 
             	
             	JSONObject json = new JSONObject();
             	
             	Record record = results.next();
             	
-            	json.put("actorId", record.get("actorId").asString()); 
-            	json.put("name", record.get("name").asString());
-            	
-            	ArrayList<String> movies = new ArrayList<String>();
-            	
-            	if (!record.get("movies").isNull())
-            		movies.add(record.get("movies").asString());
-            	
-            	while (results.hasNext()) {
-            		record = results.next();
-            		movies.add(record.get("movies").asString());
+            	// Check whether it returned anything
+            	if (!record.get("actorId").isNull()) {
+	            	json.put("actorId", record.get("actorId").asString()); 
+	            	json.put("name", record.get("name").asString());
+	            	
+	            	ArrayList<String> movies = new ArrayList<String>();
+	            	
+	            	if (!record.get("movies").isNull())
+	            		movies.add(record.get("movies").asString());
+	            	
+	            	while (results.hasNext()) {
+	            		record = results.next();
+	            		movies.add(record.get("movies").asString());
+	            	}
+	            	
+	            	json.put("movies", movies.toString());
+	            	
+	            	response = json.toString();
             	}
-            	
-            	json.put("movies", movies.toString());
-            	
-            	response = json.toString();
             }
 		}
 		
