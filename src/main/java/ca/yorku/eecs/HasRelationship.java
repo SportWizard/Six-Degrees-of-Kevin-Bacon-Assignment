@@ -7,9 +7,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 /**
- * This class is used to add an ACTED_IN relationship between an actor and a movie in the database (neo4j)
+ * This class checks if there exists a relationship between an actor and a movie in the database (neo4j)
  */
-public class AddRelationship implements HttpHandler {
+public class HasRelationship implements HttpHandler {
 
     /**
      * Confirming the correct method sent
@@ -18,9 +18,9 @@ public class AddRelationship implements HttpHandler {
     @Override
     public void handle(HttpExchange request) {
         try {
-            // Only accept PUT request
-            if (request.getRequestMethod().equals("PUT"))
-                this.handlePut(request);
+            // Only accept GET request
+            if (request.getRequestMethod().equals("GET"))
+                this.handleGet(request);
             else
                 request.sendResponseHeaders(404, -1); // If the request method is incorrect
         } catch (Exception e) {
@@ -29,18 +29,18 @@ public class AddRelationship implements HttpHandler {
     }
 
     /**
-     * Handles PUT request from the client
+     * Handles GET request from the client
      * @param request
      * @throws IOException
      * @throws JSONException
      */
-    public void handlePut(HttpExchange request) throws IOException, JSONException {
+    public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody()); // Convert request to String
         JSONObject data = new JSONObject(body); // Convert JSON to an object
 
         int statusCode = this.validateRequestData(data);
 
-        // Validate and process data, then save to the database
+        // Validate and process data, then check the relationship in the database
         if (statusCode == 200) {
             String actorId = data.getString("actorId");
             String movieId = data.getString("movieId");
@@ -49,20 +49,21 @@ public class AddRelationship implements HttpHandler {
             System.out.println("Movie Id: " + movieId);
 
             try {
-                if (!nodeExists("Actor", "actorId", actorId) || !nodeExists("Movie", "movieId", movieId)) {
-                    statusCode = 404;
-                } else {
-                    this.createRelationship(actorId, movieId);
-                }
-            } catch (Exception e) { // Catch exception from createRelationship
+                boolean hasRelationship = this.checkRelationship(actorId, movieId);
+                JSONObject response = new JSONObject();
+                response.put("actorId", actorId);
+                response.put("movieId", movieId);
+                response.put("hasRelationship", hasRelationship);
+                this.sendResponse(request, 200, response.toString());
+            } catch (Exception e) { // Catch exception from checkRelationship
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
+                this.sendResponse(request, statusCode, "");
             }
         } else {
-            System.out.println("Bad request: The request format is incorrect or required parameters are missing or duplicate relationship");
+            System.out.println("Bad request: The request format is incorrect or required parameters are missing");
+            this.sendResponse(request, statusCode, "");
         }
-
-        this.sendResponse(request, statusCode);
     }
 
     /**
@@ -73,84 +74,51 @@ public class AddRelationship implements HttpHandler {
      */
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has("actorId") && data.has("movieId") && !this.duplicateRelationship(data.getString("actorId"), data.getString("movieId")))
+            if (data.has("actorId") && data.has("movieId"))
                 return 200; // OK
             else
                 return 400; // Bad request
-        } catch (Exception e) { // Catch exception from duplicate
+        } catch (Exception e) { // Catch exception from has
             System.err.print("Caught Exception: " + e.getMessage());
             return 500; // Internal Server Error
         }
     }
 
     /**
+     * Check if the relationship exists between the actor and the movie in the database (neo4j)
      * @param actorId
      * @param movieId
-     * @return whether the relationship already exists
+     * @return boolean indicating if the relationship exists
      */
-    private boolean duplicateRelationship(String actorId, String movieId) throws Exception {
-        boolean hasDuplicate = false;
+    private boolean checkRelationship(String actorId, String movieId) throws Exception {
+        boolean hasRelationship = false;
 
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-                // Returns the relationship that matches the actorId and movieId
-                StatementResult results = tx.run("MATCH (a:Actor {actorId: $actorId})-[r:ACTED_IN]->(m:Movie {movieId: $movieId}) RETURN r", 
-                                                  Values.parameters("actorId", actorId, "movieId", movieId)); // Run query
-
-                // Check if results has any return
-                if (results.hasNext())
-                    hasDuplicate = true;
-            }
-        }
-
-        return hasDuplicate;
-    }
-
-    /**
-     * Check if a node exists in the database
-     * @param label The label of the node (Actor or Movie)
-     * @param key The key of the property to check (actorId or movieId)
-     * @param value The value of the property to check
-     * @return boolean indicating if the node exists
-     * @throws Exception
-     */
-    private boolean nodeExists(String label, String key, String value) throws Exception {
-        boolean exists = false;
-
-        try (Session session = Utils.driver.session()) {
-            try (Transaction tx = session.beginTransaction()) {
-                StatementResult result = tx.run("MATCH (n:" + label + " {" + key + ": $value}) RETURN n",
-                        Values.parameters("value", value));
+                // Query to check if the relationship exists
+                StatementResult result = tx.run("MATCH (a:Actor {actorId: $actorId})-[r:ACTED_IN]->(m:Movie {movieId: $movieId}) RETURN r",
+                        Values.parameters("actorId", actorId, "movieId", movieId));
 
                 if (result.hasNext()) {
-                    exists = true;
+                    hasRelationship = true;
                 }
             }
         }
 
-        return exists;
-    }
-
-    /**
-     * Create a new relationship (ACTED_IN) between an actor and a movie and save it to the database (neo4j)
-     * @param actorId
-     * @param movieId
-     */
-    private void createRelationship(String actorId, String movieId) {
-        try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
-            session.run("MATCH (a:Actor), (m:Movie) WHERE a.actorId = $actorId AND m.movieId = $movieId CREATE (a)-[:ACTED_IN]->(m)", 
-                        Values.parameters("actorId", actorId, "movieId", movieId)); // Run the query in Neo4j
-            System.out.println("Neo4j transaction successfully ran");
-        }
+        return hasRelationship;
     }
 
     /**
      * Send status code back to the client
      * @param request
      * @param statusCode
+     * @param response
      * @throws IOException
      */
-    private void sendResponse(HttpExchange request, int statusCode) throws IOException {
-        request.sendResponseHeaders(statusCode, -1); // .sendResponseHeaders(Status code, Response length). If response length is unknown, use -1
+    private void sendResponse(HttpExchange request, int statusCode, String response) throws IOException {
+        byte[] bytes = response.getBytes();
+        request.sendResponseHeaders(statusCode, bytes.length); 
+        request.getResponseBody().write(bytes);
+        request.getResponseBody().close();
     }
 }
