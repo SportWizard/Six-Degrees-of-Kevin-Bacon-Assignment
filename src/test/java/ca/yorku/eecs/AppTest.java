@@ -50,7 +50,7 @@ public class AppTest extends TestCase {
     	
     	try {
     		// Define the URL for the API endpoint
-    		URL url = new URL(rootPath + "/api/v1/addActor"); // Specify url link
+    		URL url = new URL(this.rootPath + "/api/v1/addActor"); // Specify url link
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT"); // Request method
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -101,7 +101,7 @@ public class AppTest extends TestCase {
     	
     	try {
     		// Define the URL for the API endpoint
-    		URL url = new URL(rootPath + "/api/v1/addActor");
+    		URL url = new URL(this.rootPath + "/api/v1/addActor");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -151,7 +151,7 @@ public class AppTest extends TestCase {
     	
     	try {
     		// Define the URL for the API endpoint
-    		URL url = new URL(rootPath + "/api/v1/addMovie");
+    		URL url = new URL(this.rootPath + "/api/v1/addMovie");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -202,7 +202,7 @@ public class AppTest extends TestCase {
     	
     	try {
     		// Define the URL for the API endpoint
-    		URL url = new URL(rootPath + "/api/v1/addMovie");
+    		URL url = new URL(this.rootPath + "/api/v1/addMovie");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -261,7 +261,7 @@ public class AppTest extends TestCase {
     		int expected;
     		
     		// Add actor
-    		url = new URL(rootPath + "/api/v1/addActor");
+    		url = new URL(this.rootPath + "/api/v1/addActor");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -281,7 +281,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(rootPath + "/api/v1/addMovie");
+		    url = new URL(this.rootPath + "/api/v1/addMovie");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -301,7 +301,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(rootPath + "/api/v1/addRelationship");
+		    url = new URL(this.rootPath + "/api/v1/addRelationship");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -359,7 +359,7 @@ public class AppTest extends TestCase {
     		int expected;
     		
     		// Add actor
-    		url = new URL(rootPath + "/api/v1/addActor");
+    		url = new URL(this.rootPath + "/api/v1/addActor");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -379,7 +379,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(rootPath + "/api/v1/addMovie");
+		    url = new URL(this.rootPath + "/api/v1/addMovie");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -399,7 +399,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(rootPath + "/api/v1/addRelationship");
+		    url = new URL(this.rootPath + "/api/v1/addRelationship");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -456,7 +456,7 @@ public class AppTest extends TestCase {
     		int expected;
     		
     		// Add actor
-    		url = new URL(rootPath + "/api/v1/addActor");
+    		url = new URL(this.rootPath + "/api/v1/addActor");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -476,7 +476,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(rootPath + "/api/v1/addMovie");
+		    url = new URL(this.rootPath + "/api/v1/addMovie");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -496,7 +496,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(rootPath + "/api/v1/addRelationship");
+		    url = new URL(this.rootPath + "/api/v1/addRelationship");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -516,34 +516,37 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code add relationship", expected, statusCode);
 		    
 		    // Get Actor
-//		    url = new URL(rootPath + "/api/v1/getActor?actorId=" + actorId);
+//		    url = new URL(this.rootPath + "/api/v1/getActor");
 //		    connection = (HttpURLConnection) url.openConnection();
 //		    connection.setRequestMethod("GET");
 //		    connection.setRequestProperty("Content-Type", "application/json");
 //		    connection.setDoInput(true); // For reading from the server
+//		    
+//		    json = new JSONObject();
+//    		json.put("actorId", actorId);
+//    		
+//    		os = connection.getOutputStream();
+//    		input = json.toString();
+//		    os.write(input.getBytes());
+//		    os.close();
 //
 //		    // Get response
 //		    statusCode = connection.getResponseCode();
 //		    expected = 200;
 //		    assertEquals("Incorrect status code for get actor", expected, statusCode);
 //		    
-//		    StringBuilder response = null;
-//
+//		    StringBuffer response = null;
+//		    
 //		    if (statusCode == 200) {
-//		        InputStream is = connection.getInputStream();
-//		        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+//				BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//				String inputLine;
+//				response = new StringBuffer();
 //
-//		        response = new StringBuilder();
-//		        String line;
-//
-//		        while ((line = reader.readLine()) != null) {
-//		            response.append(line);
-//		            response.append(System.lineSeparator());
-//		        }
-//
-//		        reader.close();
-//		        is.close();
-//		    }
+//				while ((inputLine = in.readLine()) != null)
+//					response.append(inputLine);
+//				
+//				in.close();
+//			}
 //		    
 //		    String expectedString = String.format("{\"actorId\": \"%s\", \"name\": \"%s\", \"movies\": [\"%s\"]}", actorId, actorName, movieId);
 //		    assertEquals("Incorrect response for get actor", expectedString, response);
@@ -588,7 +591,7 @@ public class AppTest extends TestCase {
     		int expected;
     		
     		// Add actor
-    		url = new URL(rootPath + "/api/v1/addActor");
+    		url = new URL(this.rootPath + "/api/v1/addActor");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -608,7 +611,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code for add actor", expected, statusCode);
     		
     		// Add movie
-		    url = new URL(rootPath + "/api/v1/addMovie");
+		    url = new URL(this.rootPath + "/api/v1/addMovie");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -628,7 +631,7 @@ public class AppTest extends TestCase {
 		    assertEquals("Incorrect status code add movie", expected, statusCode);
     		
     		// Add Relationship
-		    url = new URL(rootPath + "/api/v1/addRelationship");
+		    url = new URL(this.rootPath + "/api/v1/addRelationship");
     		connection = (HttpURLConnection) url.openConnection();
     		connection.setRequestMethod("PUT");
     		connection.setRequestProperty("Content-Type", "application/json");
@@ -658,7 +661,7 @@ public class AppTest extends TestCase {
     		
     		// Remove node(s) added
 		    try (Session session = Utils.driver.session()) {
-		    	String query = String.format("MATCH (a:%s {%s: $actorName, %s: $actorId})-[r:%s]->(m:%s {%s: $movieName, %s: $movieId}) DELETE r, a, m", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty, Utils.actedInRelationship, Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
+		    	String query = String.format("MATCH (a:%s {%s: $actorName, %s: $actorId}), (m:%s {%s: $movieName, %s: $movieId}) DETACH DELETE a, m", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty, Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
 		    	session.run(query, Values.parameters("actorName", actorName, "actorId", actorId, "movieName", movieName, "movieId", movieId));
 		    }
     		catch (Exception e) {
