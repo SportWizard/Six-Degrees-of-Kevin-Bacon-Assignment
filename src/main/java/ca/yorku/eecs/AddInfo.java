@@ -84,7 +84,7 @@ public class AddInfo implements HttpHandler {
             return 400;
         }
         catch (Exception e) {
-            System.err.print("Caught Exception: " + e.getMessage());
+            System.err.print("Caught Exception here: " + e.getMessage());
             return 500;
         }
     }
