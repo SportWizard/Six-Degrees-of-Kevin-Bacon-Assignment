@@ -118,16 +118,16 @@ public class HasRelationship implements HttpHandler {
     private boolean findMovie(String movieId) throws Exception {
         boolean exist = false;
 
-        try (Session session = Utils.driver.session()) {
-            try (Transaction tx = session.beginTransaction()) {
+        try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
+
                 // Returns the movie that matches the movieId
-                String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", Utils.movieLabel, Utils.movieIdProperty);
-                StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Run query
+            String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", Utils.movieLabel, Utils.movieIdProperty);
+            StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Run query
 
                 // Check if results has any return
-                if (results.hasNext())
-                    exist = true;
-            }
+            if (results.hasNext())
+                exist = true;
+
         }
 
         return exist;
@@ -136,16 +136,16 @@ public class HasRelationship implements HttpHandler {
     private boolean findActor(String actorId) throws Exception {
         boolean exist = false;
 
-        try (Session session = Utils.driver.session()) {
-            try (Transaction tx = session.beginTransaction()) {
+        try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
+
                 // Returns the movie that matches the movieId
-                String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", Utils.actorLabel, Utils.actorIdProperty);
-                StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Run query
+            String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", Utils.actorLabel, Utils.actorIdProperty);
+            StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Run query
 
                 // Check if results has any return
-                if (results.hasNext())
-                    exist = true;
-            }
+            if (results.hasNext())
+                exist = true;
+
         }
 
         return exist;
