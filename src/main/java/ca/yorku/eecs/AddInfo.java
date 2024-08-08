@@ -122,6 +122,11 @@ public class AddInfo implements HttpHandler {
         return hasDuplicate;
     }
     
+    /**
+     * @param data
+     * @return IMDB rating from input
+     * @throws JSONException
+     */
     private double getImdb(JSONObject data) throws JSONException {
     	if (data.has(Utils.imdbRatingProperty))
     		return data.getDouble(Utils.imdbRatingProperty);
@@ -129,6 +134,11 @@ public class AddInfo implements HttpHandler {
     		return 0;
     }
     
+    /**
+     * @param data
+     * @return MPAA rating from input
+     * @throws JSONException
+     */
     private String getMpaa(JSONObject data) throws JSONException {
     	if (data.has(Utils.mpaaRatingProperty))
     		return data.getString(Utils.mpaaRatingProperty);
@@ -136,6 +146,11 @@ public class AddInfo implements HttpHandler {
     		return "";
     }
     
+    /**
+     * @param data
+     * @return Year from input
+     * @throws JSONException
+     */
     private int getyear(JSONObject data) throws JSONException {
     	if (data.has(Utils.yearProperty))
     		return data.getInt(Utils.yearProperty);
