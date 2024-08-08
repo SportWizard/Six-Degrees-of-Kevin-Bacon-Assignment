@@ -1,6 +1,7 @@
 package ca.yorku.eecs;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.json.*;
@@ -124,7 +125,7 @@ public class ComputeBaconPath implements HttpHandler {
 		if (node != null) {
 			JSONObject json = new JSONObject();
 			
-			ArrayList<String> path = this.getPath(node);
+			List<String> path = this.getPath(node);
 			
 			json.put("baconPath", path.toString());
 			
@@ -138,8 +139,8 @@ public class ComputeBaconPath implements HttpHandler {
 	 * @param node
 	 * @return The path from the actor to Kevin Bacon
 	 */
-	private ArrayList<String> getPath(ca.yorku.eecs.Node node) {
-		ArrayList<String> path = new ArrayList<String>();
+	private List<String> getPath(ca.yorku.eecs.Node node) {
+		List<String> path = new ArrayList<String>();
 		ca.yorku.eecs.Node curNode = node;
 		
 		// Add the id of the nodes in the path
