@@ -57,7 +57,7 @@ public class AddInfo implements HttpHandler {
             System.out.println("Info Id: " + infoId);
 
             try (Session session = Utils.driver.session()) {
-                String query = String.format("CREATE (i:%s {%s: $imdbRating, %s: $mpaaRating, %s: $year, %s: $infoId", Utils.infoLabel, Utils.imdbRatingProperty, Utils.mpaaRatingProperty, Utils.yearProperty, Utils.infoIdProperty);
+                String query = String.format("CREATE (i:%s {%s: $imdbRating, %s: $mpaaRating, %s: $year, %s: $infoId})", Utils.infoLabel, Utils.imdbRatingProperty, Utils.mpaaRatingProperty, Utils.yearProperty, Utils.infoIdProperty);
                 session.run(query, Values.parameters("imdbRating", imdbRating, "mpaaRating", mpaaRating, "year", year, "infoId", infoId));
                 System.out.println("Neo4j transaction successfully ran");
             } catch (Exception e) { // Catch exception from createConnection
