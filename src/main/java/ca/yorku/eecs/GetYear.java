@@ -42,36 +42,22 @@ public class GetYear implements HttpHandler {
         JSONObject data = new JSONObject(body);
 
         String response = null;
-        /*
-        String queryParams = request.getRequestURI().getQuery(); // Get query parameters from URL
-        JSONObject data = new JSONObject();
-        for (String param : queryParams.split("&")) {
-            String[] keyValue = param.split("=");
-            data.put(keyValue[0], keyValue[1]);
-        } */
-
         int statusCode = this.validateRequestData(data);
 
-        // Validate and process data, then retrieve from the database
         if (statusCode == 200) {
-           // int year = data.getInt("year");
-           // System.out.println("Year: " + year);
 
             try {
                 response = getYear(Integer.parseInt(data.getString(Utils.yearProperty)));
-               // JSONArray movies = this.getMoviesByYear(year);
-              //  this.sendResponse(request, 200, movies.toString());
+
                 if (response == null) {
                     statusCode = 404;
                 }
             } catch (Exception e) { // Catch exception from getMoviesByYear
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
-                //this.sendResponse(request, statusCode, "");
             }
         } else {
             System.out.println("Bad request: The request format is incorrect or required parameters are missing");
-            //this.sendResponse(request, statusCode, "");
         }
         this.sendResponse(request, statusCode, response);
     }
@@ -100,7 +86,6 @@ public class GetYear implements HttpHandler {
      * @return JSONArray of movies
      */
     private String getYear(Integer year) throws Exception {
-       // JSONArray movies = new JSONArray();
         String response = null;
 
         try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
@@ -125,18 +110,7 @@ public class GetYear implements HttpHandler {
 
                 response = json.toString();
             }
-
-           /*     // Query to get movies by year
-            StatementResult result = tx.run("MATCH (m:Movie {year: $year}) RETURN m.name AS movieName",
-                    Values.parameters("year", year));
-
-                while (result.hasNext()) {
-                    Record record = result.next();
-                    movies.put(record.get("movieName").asString());
-                }*/
-
         }
-
         return response;
     }
 
@@ -157,10 +131,4 @@ public class GetYear implements HttpHandler {
         else
             request.sendResponseHeaders(statusCode, -1);
     }
-        /*
-        byte[] bytes = response.getBytes();
-        request.sendResponseHeaders(statusCode, bytes.length); 
-        request.getResponseBody().write(bytes);
-        request.getResponseBody().close();*/
-
 }
