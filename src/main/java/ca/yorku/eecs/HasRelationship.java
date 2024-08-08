@@ -139,7 +139,7 @@ public class HasRelationship implements HttpHandler {
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
                 // Returns the movie that matches the movieId
-                String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN m", Utils.actorLabel, Utils.actorIdProperty);
+                String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", Utils.actorLabel, Utils.actorIdProperty);
                 StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Run query
 
                 // Check if results has any return
