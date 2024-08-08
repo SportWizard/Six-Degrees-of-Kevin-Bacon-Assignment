@@ -179,7 +179,7 @@ public class HasRelationship implements HttpHandler {
 
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-                String query = String.format("MATCH (a:%s {%s: $actorId}), (m:%s {%s: movieId}) OPTIONAL MATCH (a)-[r:%s]-(m) RETURN m.%s AS movieId, a.%s AS actorId, EXISTS ((a)-[:%s]-(m)) AS hasRelationship", Utils.actorLabel, Utils.actorIdProperty, Utils.movieLabel, Utils.movieIdProperty, Utils.actedInRelationship, Utils.movieIdProperty, Utils.actorIdProperty, Utils.actedInRelationship);
+                String query = String.format("MATCH (a:%s {%s: $actorId}), (m:%s {%s: $movieId}) OPTIONAL MATCH (a)-[r:%s]-(m) RETURN m.%s AS movieId, a.%s AS actorId, EXISTS ((a)-[:%s]-(m)) AS hasRelationship", Utils.actorLabel, Utils.actorIdProperty, Utils.movieLabel, Utils.movieIdProperty, Utils.actedInRelationship, Utils.movieIdProperty, Utils.actorIdProperty, Utils.actedInRelationship);
                 StatementResult results = tx.run(query, Values.parameters("movieId", movieId, "actorId", actorId));  // Use "AS" to rename key, since it will appear the name in the JSON
 
                 JSONObject json = new JSONObject();
