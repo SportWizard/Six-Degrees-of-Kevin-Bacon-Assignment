@@ -57,7 +57,6 @@ public class GetActor implements HttpHandler {
 	    		
 	    		// Check if there is an actor in the database that matches with actorId
 	    		if (response == null)
-					System.out.println("HERE");
 	    			statusCode = 404;
 	    	}
 	    	catch (Exception e) {
