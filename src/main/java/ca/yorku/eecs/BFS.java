@@ -21,7 +21,7 @@ public class BFS {
      * @param actorId
      * @return The node of the actor
      */
-    public Node bfs(String actorId) {
+    public Node traverse(String actorId) {
     	Queue<Node> queue = new LinkedList<Node>();
     	Set<Node> visited = new HashSet<Node>();
     	Node node = null;
