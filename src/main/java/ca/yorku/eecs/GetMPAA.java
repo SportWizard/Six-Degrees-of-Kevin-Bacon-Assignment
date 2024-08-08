@@ -34,7 +34,6 @@ public class GetMPAA implements HttpHandler {
         if (statusCode == 200) {
             try {
                 response = getMPAA(data.getString(Utils.mpaaRatingProperty));
-                System.out.println(response);
 
                 if (response == null) {
                     statusCode = 404;
@@ -73,6 +72,7 @@ public class GetMPAA implements HttpHandler {
             Record record = results.next();
 
             ArrayList<String> movies = new ArrayList<String>();
+            System.out.println(record.get("movies").isNull());
 
             if (!record.get("movies").isNull())
                 movies.add(record.get("movies").asString());
