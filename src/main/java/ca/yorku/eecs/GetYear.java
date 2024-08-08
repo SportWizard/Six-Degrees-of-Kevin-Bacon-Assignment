@@ -1,6 +1,10 @@
 package ca.yorku.eecs;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.*;
 import org.neo4j.driver.v1.*;
 import com.sun.net.httpserver.HttpExchange;
@@ -35,33 +39,28 @@ public class GetYear implements HttpHandler {
      * @throws JSONException
      */
     public void handleGet(HttpExchange request) throws IOException, JSONException {
-        String queryParams = request.getRequestURI().getQuery(); // Get query parameters from URL
-        JSONObject data = new JSONObject();
-        for (String param : queryParams.split("&")) {
-            String[] keyValue = param.split("=");
-            data.put(keyValue[0], keyValue[1]);
-        }
+        String body = Utils.convert(request.getRequestBody());
+        JSONObject data = new JSONObject(body);
 
+        String response = null;
         int statusCode = this.validateRequestData(data);
 
-        // Validate and process data, then retrieve from the database
         if (statusCode == 200) {
-            int year = data.getInt("year");
-
-            System.out.println("Year: " + year);
 
             try {
-                JSONArray movies = this.getMoviesByYear(year);
-                this.sendResponse(request, 200, movies.toString());
+                response = getYear(Integer.parseInt(data.getString(Utils.yearProperty)));
+
+                if (response == null) {
+                    statusCode = 404;
+                }
             } catch (Exception e) { // Catch exception from getMoviesByYear
                 System.err.print("Caught Exception: " + e.getMessage());
-                statusCode = 500;
-                this.sendResponse(request, statusCode, "");
+                response = e.getMessage();
             }
         } else {
             System.out.println("Bad request: The request format is incorrect or required parameters are missing");
-            this.sendResponse(request, statusCode, "");
         }
+        this.sendResponse(request, statusCode, response);
     }
 
     /**
@@ -72,7 +71,7 @@ public class GetYear implements HttpHandler {
      */
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has("year"))
+            if (data.has(Utils.yearProperty))
                 return 200; // OK
             else
                 return 400; // Bad request
@@ -87,23 +86,33 @@ public class GetYear implements HttpHandler {
      * @param year
      * @return JSONArray of movies
      */
-    private JSONArray getMoviesByYear(int year) throws Exception {
-        JSONArray movies = new JSONArray();
+    private String getYear(Integer year) throws Exception {
+        String response = null;
 
-        try (Session session = Utils.driver.session()) {
-            try (Transaction tx = session.beginTransaction()) {
-                // Query to get movies by year
-                StatementResult result = tx.run("MATCH (m:Movie {year: $year}) RETURN m.name AS movieName",
-                        Values.parameters("year", year));
+        try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
+            String query = String.format("MATCH (i:%s {%s: $year}), (i)-[h:%s]-(m:%s) RETURN m.%s AS movies", Utils.infoLabel, Utils.yearProperty, Utils.hasRelationship, Utils.movieLabel, Utils.movieIdProperty);
+            StatementResult results = tx.run(query, Values.parameters("year", year)); // Use "AS" to rename key, since it will appear the name in the JSON
 
-                while (result.hasNext()) {
-                    Record record = result.next();
-                    movies.put(record.get("movieName").asString());
+            JSONObject json = new JSONObject();
+            if (results.hasNext()) {
+                Record record = results.next();
+
+                List<String> movies = new ArrayList<String>();
+
+                if (!record.get("movies").isNull())
+                    movies.add(record.get("movies").asString());
+
+                while (results.hasNext()) {
+                    record = results.next();
+                    movies.add(record.get("movies").asString());
                 }
+
+                json.put("movies", movies.toString());
+
+                response = json.toString();
             }
         }
-
-        return movies;
+        return response;
     }
 
     /**
@@ -114,9 +123,13 @@ public class GetYear implements HttpHandler {
      * @throws IOException
      */
     private void sendResponse(HttpExchange request, int statusCode, String response) throws IOException {
-        byte[] bytes = response.getBytes();
-        request.sendResponseHeaders(statusCode, bytes.length); 
-        request.getResponseBody().write(bytes);
-        request.getResponseBody().close();
+        if (statusCode == 200) {
+            request.sendResponseHeaders(statusCode, response.length());
+            OutputStream os = request.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        }
+        else
+            request.sendResponseHeaders(statusCode, -1);
     }
 }

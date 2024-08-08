@@ -10,7 +10,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 /**
- * This class connects movie with ranks
+ * This class creates a set of information related to a specific movie
  */
 public class AddInfo implements HttpHandler {
 
@@ -22,7 +22,6 @@ public class AddInfo implements HttpHandler {
     @Override
     public void handle(HttpExchange request) {
         try {
-            // Only accept POST request
             if (request.getRequestMethod().equals("PUT"))
                 this.handlePut(request);
             else
@@ -46,26 +45,40 @@ public class AddInfo implements HttpHandler {
         int statusCode = this.validateRequestData(data);
 
         if (statusCode == 200) {
-            int imdbRating = Integer.parseInt(data.getString(Utils.imdbRatingProperty));
-            String mpaaRating = data.getString(Utils.mpaaRatingProperty);
-            int year = Integer.parseInt(data.getString(Utils.yearProperty));
-            String infoId = data.getString(Utils.infoIdProperty);
+        	try {
+        		// Default values
+        		double imdbRating = this.getImdb(data);
+        		String mpaaRating = this.getMpaa(data);
+        		Integer year = this.getyear(data);
+        		String infoId = data.getString(Utils.infoIdProperty);
 
-            System.out.println("IMDB Rating: " + imdbRating);
-            System.out.println("MPAA Rating: " + mpaaRating);
-            System.out.println("year: " + year);
-            System.out.println("Info Id: " + infoId);
-
-            try (Session session = Utils.driver.session()) {
-                String query = String.format("CREATE (i:%s {%s: $imdbRating, %s: $mpaaRating, %s: $year, %s: $infoId", Utils.infoLabel, Utils.imdbRatingProperty, Utils.mpaaRatingProperty, Utils.yearProperty, Utils.infoIdProperty);
-                session.run(query, Values.parameters("imdbRating", imdbRating, "mpaaRating", mpaaRating, "year", year, "infoId", infoId));
-                System.out.println("Neo4j transaction successfully ran");
-            } catch (Exception e) { // Catch exception from createConnection
+        		// Set to input value or default value (already initialized) depending if the Json contain the information needed
+    	    	
+    	    	
+    	    	if (data.has(Utils.mpaaRatingProperty))
+    	    		mpaaRating = data.getString(Utils.mpaaRatingProperty);
+    	    	
+    	    	if (data.has(Utils.yearProperty))
+    	    		year = data.getInt(Utils.yearProperty);
+	
+	            System.out.println("IMDB Rating: " + imdbRating);
+	            System.out.println("MPAA Rating: " + mpaaRating);
+	            System.out.println("year: " + year);
+	            System.out.println("Info Id: " + infoId);
+            
+	            try (Session session = Utils.driver.session()) {
+	                String query = String.format("CREATE (i:%s {%s: $imdbRating, %s: $mpaaRating, %s: $year, %s: $infoId})", Utils.infoLabel, Utils.imdbRatingProperty, Utils.mpaaRatingProperty, Utils.yearProperty, Utils.infoIdProperty);
+	                session.run(query, Values.parameters("imdbRating", imdbRating, "mpaaRating", mpaaRating, "year", year, "infoId", infoId));
+	                System.out.println("Neo4j transaction successfully ran");
+	            }
+        	}
+            catch (Exception e) { // Catch exception from createConnection
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
             }
-        } else
-            System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate");
+        }
+        else
+        	System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate");
 
         this.sendResponse(request, statusCode);
     }
@@ -78,7 +91,7 @@ public class AddInfo implements HttpHandler {
 
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has(Utils.infoIdProperty) && !duplicate(Utils.infoIdProperty)){
+            if (data.has(Utils.infoIdProperty) && !duplicate(data.getString(Utils.infoIdProperty))){
                 return 200;
             }
             return 400;
@@ -99,7 +112,7 @@ public class AddInfo implements HttpHandler {
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
                 String query = String.format("MATCH (i:%s) WHERE i.%s = $infoId RETURN i", Utils.infoLabel, Utils.infoIdProperty);
-                StatementResult results = tx.run(query, Values.parameters("infoID", infoId)); // Run query
+                StatementResult results = tx.run(query, Values.parameters("infoId", infoId)); // Run query
 
                 if (results.hasNext())
                     hasDuplicate = true;
@@ -107,6 +120,42 @@ public class AddInfo implements HttpHandler {
         }
 
         return hasDuplicate;
+    }
+    
+    /**
+     * @param data
+     * @return IMDB rating from input
+     * @throws JSONException
+     */
+    private double getImdb(JSONObject data) throws JSONException {
+    	if (data.has(Utils.imdbRatingProperty))
+    		return data.getDouble(Utils.imdbRatingProperty);
+    	else
+    		return 0;
+    }
+    
+    /**
+     * @param data
+     * @return MPAA rating from input
+     * @throws JSONException
+     */
+    private String getMpaa(JSONObject data) throws JSONException {
+    	if (data.has(Utils.mpaaRatingProperty))
+    		return data.getString(Utils.mpaaRatingProperty);
+    	else
+    		return "";
+    }
+    
+    /**
+     * @param data
+     * @return Year from input
+     * @throws JSONException
+     */
+    private int getyear(JSONObject data) throws JSONException {
+    	if (data.has(Utils.yearProperty))
+    		return data.getInt(Utils.yearProperty);
+    	else
+    		return 0;
     }
 
     /**
