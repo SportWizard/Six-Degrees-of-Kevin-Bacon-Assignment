@@ -98,7 +98,6 @@ public class AddInfo implements HttpHandler {
 
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-                System.out.println("here");
                 String query = String.format("MATCH (a:%s) WHERE a.%s = $infoId RETURN a", Utils.infoLabel, Utils.infoIdProperty);
                 StatementResult results = tx.run(query, Values.parameters("infoID", infoId)); // Run query
 
