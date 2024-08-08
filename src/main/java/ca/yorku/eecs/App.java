@@ -16,7 +16,6 @@ public class App {
         server.createContext("/api/v1/addRelationship", new AddRelationship());
         server.createContext("/api/v1/addInfo", new AddInfo());
 
-
         // Get methods
         server.createContext("/api/v1/getActor", new GetActor());
         server.createContext("/api/v1/hasMovieInfo", new HasMovieInfo());
