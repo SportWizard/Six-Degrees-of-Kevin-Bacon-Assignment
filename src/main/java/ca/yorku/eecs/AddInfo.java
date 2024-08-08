@@ -45,7 +45,7 @@ public class AddInfo implements HttpHandler {
         int statusCode = this.validateRequestData(data);
 
         if (statusCode == 200) {
-            int imdbRating = Integer.parseInt(data.getString(Utils.imdbRatingProperty));
+            double imdbRating = Double.parseDouble(data.getString(Utils.imdbRatingProperty));
             String mpaaRating = data.getString(Utils.mpaaRatingProperty);
             int year = Integer.parseInt(data.getString(Utils.yearProperty));
             String infoId = data.getString(Utils.infoIdProperty);
