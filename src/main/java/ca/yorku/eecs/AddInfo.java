@@ -10,7 +10,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 /**
- * This class connects movie with ranks
+ * This class creates a set of information related to a specific movie
  */
 public class AddInfo implements HttpHandler {
 
