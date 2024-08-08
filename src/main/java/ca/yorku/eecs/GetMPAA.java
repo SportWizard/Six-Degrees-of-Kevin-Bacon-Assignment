@@ -52,7 +52,6 @@ public class GetMPAA implements HttpHandler {
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
             if (data.has(Utils.mpaaRatingProperty)) {
-           // if (data.has(Utils.movieIdProperty)) {
                 return 200;
             }
             return 400;
