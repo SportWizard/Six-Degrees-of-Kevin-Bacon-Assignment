@@ -31,6 +31,7 @@ public class GetActor implements HttpHandler {
 			if (request.getRequestMethod().equals("GET"))
 				this.handleGet(request);
 			else
+				System.out.println("HERE");
 				request.sendResponseHeaders(404, -1);
 		}
 		catch (Exception e) {
