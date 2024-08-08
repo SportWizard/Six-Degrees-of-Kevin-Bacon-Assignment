@@ -84,7 +84,7 @@ public class AddInfo implements HttpHandler {
             return 400;
         }
         catch (Exception e) {
-            System.err.print("Caught Exception here: " + e.getMessage());
+            System.err.print("Caught Exception: " + e.getMessage());
             return 500;
         }
     }
@@ -94,6 +94,7 @@ public class AddInfo implements HttpHandler {
      * @return whether infoId is a duplicate
      */
     private boolean duplicate(String infoId) throws Exception {
+        System.out.println("here");
         boolean hasDuplicate = false;
 
         try (Session session = Utils.driver.session()) {
