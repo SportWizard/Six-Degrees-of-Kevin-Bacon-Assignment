@@ -1,5 +1,6 @@
 package ca.yorku.eecs;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -110,7 +111,7 @@ public class GetActor implements HttpHandler {
 	            	json.put("actorId", record.get("actorId").asString()); 
 	            	json.put("name", record.get("name").asString());
 	            	
-	            	ArrayList<String> movies = new ArrayList<String>();
+	            	List<String> movies = new ArrayList<String>();
 	            	
 	            	if (!record.get("movies").isNull())
 	            		movies.add(record.get("movies").asString());
