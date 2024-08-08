@@ -78,7 +78,7 @@ public class AddInfo implements HttpHandler {
 
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has(Utils.infoIdProperty) && !duplicate(Utils.infoIdProperty)){
+            if (data.has(Utils.infoIdProperty) && !duplicate(data.getString(Utils.infoIdProperty))){
                 return 200;
             }
             return 400;
