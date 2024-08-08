@@ -41,41 +41,17 @@ public class HasRelationship implements HttpHandler {
         JSONObject data = new JSONObject(body);
         String response = null;
 
-       /* String queryParams = request.getRequestURI().getQuery(); // Get query parameters from URL
-        JSONObject data = new JSONObject();
-        for (String param : queryParams.split("&")) {
-            String[] keyValue = param.split("=");
-            data.put(keyValue[0], keyValue[1]);
-        } */
-
         int statusCode = this.validateRequestData(data);
 
-        // Validate and process data, then check the relationship in the database
         if (statusCode == 200) {
-
-           // String actorId = data.getString("actorId");
-            //String movieId = data.getString("movieId");
-
-           // System.out.println("Actor Id: " + actorId);
-            //System.out.println("Movie Id: " + movieId);
-
             try {
                 response = this.hasRelationship(data.getString(Utils.movieIdProperty), data.getString(Utils.actorIdProperty));
-
-               /* boolean hasRelationship = this.checkRelationship(actorId, movieId);
-                JSONObject response = new JSONObject();
-                response.put("actorId", actorId);
-                response.put("movieId", movieId);
-                response.put("hasRelationship", hasRelationship);
-                this.sendResponse(request, 200, response.toString()); */
             } catch (Exception e) { // Catch exception from checkRelationship
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
-               // this.sendResponse(request, statusCode, "");
             }
         } else {
             System.out.println("Bad request: The request format is incorrect or required parameters are missing");
-            //this.sendResponse(request, statusCode, "");
         }
         this.sendResponse(request, statusCode, response);
     }
@@ -103,16 +79,6 @@ public class HasRelationship implements HttpHandler {
             System.err.print("Caught Exception: " + e.getMessage());
             return 500; // Internal Server Error
         }
-        /*
-        try {
-            if (data.has("actorId") && data.has("movieId"))
-                return 200; // OK
-            else
-                return 400; // Bad request
-        } catch (Exception e) { // Catch exception from has
-            System.err.print("Caught Exception: " + e.getMessage());
-            return 500; // Internal Server Error
-        }*/
     }
 
     private boolean findMovie(String movieId) throws Exception {
@@ -127,9 +93,7 @@ public class HasRelationship implements HttpHandler {
                 // Check if results has any return
             if (results.hasNext())
                 exist = true;
-
         }
-
         return exist;
     }
 
@@ -137,17 +101,14 @@ public class HasRelationship implements HttpHandler {
         boolean exist = false;
 
         try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
-
                 // Returns the movie that matches the movieId
             String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", Utils.actorLabel, Utils.actorIdProperty);
             StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Run query
-
                 // Check if results has any return
             if (results.hasNext())
                 exist = true;
 
         }
-
         return exist;
     }
     /**
@@ -155,25 +116,7 @@ public class HasRelationship implements HttpHandler {
      * @param actorId
      * @param movieId
      * @return boolean indicating if the relationship exists
-     *//*
-    private boolean checkRelationship(String actorId, String movieId) throws Exception {
-        boolean hasRelationship = false;
-
-        try (Session session = Utils.driver.session()) {
-            try (Transaction tx = session.beginTransaction()) {
-                // Query to check if the relationship exists
-                String query = String.format("MATCH (a:%s {%s: $actorId})-[r:%s]-(m:%s {%s: $movieId}) RETURN h", Utils.actorLabel, Utils.actorIdProperty, Utils.hasRelationship, Utils.movieLabel, Utils.movieIdProperty);
-                StatementResult result = tx.run(query, Values.parameters("movieId", movieId, "actorId", actorId)); // Run query
-               // StatementResult result = tx.run("MATCH (a:Actor {actorId: $actorId})-[r:ACTED_IN]->(m:Movie {movieId: $movieId}) RETURN r",
-                 //       Values.parameters("actorId", actorId, "movieId", movieId));
-                if (result.hasNext()) {
-                    hasRelationship = true;
-                }
-            }
-        }
-
-        return hasRelationship;
-    } */
+     */
     private String hasRelationship(String movieId, String actorId) throws Exception {
         String response = null;
 
@@ -190,9 +133,7 @@ public class HasRelationship implements HttpHandler {
             json.put("hasRelationship", record.get("hasRelationship").asBoolean());
 
             response = json.toString();
-
         }
-
         return response;
     }
 
@@ -205,10 +146,6 @@ public class HasRelationship implements HttpHandler {
      * @throws IOException
      */
     private void sendResponse(HttpExchange request, int statusCode, String response) throws IOException {
-       /* byte[] bytes = response.getBytes();
-        request.sendResponseHeaders(statusCode, bytes.length); 
-        request.getResponseBody().write(bytes);
-        request.getResponseBody().close();*/
         if (statusCode == 200) {
             request.sendResponseHeaders(statusCode, response.length()); // .sendResponseHeaders(Status code, Response length)
 
