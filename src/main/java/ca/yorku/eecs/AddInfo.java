@@ -42,7 +42,6 @@ public class AddInfo implements HttpHandler {
     public void handlePut(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody());
         JSONObject data = new JSONObject(body);
-        System.out.println(data.getString(Utils.infoIdProperty));
 
         int statusCode = this.validateRequestData(data);
 
@@ -106,7 +105,7 @@ public class AddInfo implements HttpHandler {
                     hasDuplicate = true;
             }
         }
-
+        System.out.println("here");
         return hasDuplicate;
     }
 
