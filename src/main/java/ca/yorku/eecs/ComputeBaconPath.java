@@ -118,7 +118,8 @@ public class ComputeBaconPath implements HttpHandler {
 	private String baconPath(String actorId) throws JSONException {
 		String response = null;
 		
-		ca.yorku.eecs.Node node = Utils.bfs(actorId);
+		BFS bfs = new BFS();
+		ca.yorku.eecs.Node node = bfs.traverse(actorId);
 		
 		if (node != null) {
 			JSONObject json = new JSONObject();

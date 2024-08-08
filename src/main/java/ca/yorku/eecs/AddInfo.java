@@ -78,7 +78,7 @@ public class AddInfo implements HttpHandler {
 
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
-            if (data.has(Utils.infoIdProperty) && !duplicate(data.getString(Utils.infoIdProperty))){
+            if (data.has(Utils.infoIdProperty) && !duplicate(Utils.infoIdProperty)){
                 return 200;
             }
             return 400;
@@ -98,13 +98,14 @@ public class AddInfo implements HttpHandler {
 
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
-                String query = String.format("MATCH (a:%s) WHERE a.%s = $infoId RETURN a", Utils.infoLabel, Utils.infoIdProperty);
+                String query = String.format("MATCH (i:%s) WHERE i.%s = $infoId RETURN i", Utils.infoLabel, Utils.infoIdProperty);
                 StatementResult results = tx.run(query, Values.parameters("infoID", infoId)); // Run query
 
                 if (results.hasNext())
                     hasDuplicate = true;
             }
         }
+
         return hasDuplicate;
     }
 
