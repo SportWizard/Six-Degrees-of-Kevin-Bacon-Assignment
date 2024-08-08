@@ -33,8 +33,8 @@ public class GetMPAA implements HttpHandler {
 
         if (statusCode == 200) {
             try {
-               // response = getMPAA(data.getString(Utils.movieIdProperty));
                 response = getMPAA(data.getString(Utils.mpaaRatingProperty));
+                System.out.println(response);
 
                 if (response == null) {
                     statusCode = 404;
