@@ -42,6 +42,7 @@ public class AddInfo implements HttpHandler {
     public void handlePut(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody());
         JSONObject data = new JSONObject(body);
+        System.out.println(data.getString(Utils.infoIdProperty));
 
         int statusCode = this.validateRequestData(data);
 
@@ -94,7 +95,6 @@ public class AddInfo implements HttpHandler {
      * @return whether infoId is a duplicate
      */
     private boolean duplicate(String infoId) throws Exception {
-        System.out.println("here");
         boolean hasDuplicate = false;
 
         try (Session session = Utils.driver.session()) {
