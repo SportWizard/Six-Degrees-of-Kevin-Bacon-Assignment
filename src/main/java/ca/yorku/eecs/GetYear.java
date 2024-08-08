@@ -3,6 +3,7 @@ package ca.yorku.eecs;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.*;
 import org.neo4j.driver.v1.*;
@@ -96,7 +97,7 @@ public class GetYear implements HttpHandler {
             if (results.hasNext()) {
                 Record record = results.next();
 
-                ArrayList<String> movies = new ArrayList<String>();
+                List<String> movies = new ArrayList<String>();
 
                 if (!record.get("movies").isNull())
                     movies.add(record.get("movies").asString());
