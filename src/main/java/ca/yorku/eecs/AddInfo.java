@@ -16,7 +16,6 @@ public class AddInfo implements HttpHandler {
 
     /**
      * Confirming the correct method sent
-     *
      * @param request request
      */
     @Override
@@ -25,7 +24,7 @@ public class AddInfo implements HttpHandler {
             if (request.getRequestMethod().equals("PUT"))
                 this.handlePut(request);
             else
-                request.sendResponseHeaders(404, -1);
+                request.sendResponseHeaders(404, -1);// If the request method is incorrect
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -39,11 +38,11 @@ public class AddInfo implements HttpHandler {
      * @throws JSONException
      */
     public void handlePut(HttpExchange request) throws IOException, JSONException {
-        String body = Utils.convert(request.getRequestBody());
-        JSONObject data = new JSONObject(body);
+        String body = Utils.convert(request.getRequestBody());// Convert request to String
+        JSONObject data = new JSONObject(body);// Convert JSON to an object
 
         int statusCode = this.validateRequestData(data);
-
+        // Validate and process data, then save to the database
         if (statusCode == 200) {
         	try {
         		// Default values
@@ -53,8 +52,6 @@ public class AddInfo implements HttpHandler {
         		String infoId = data.getString(Utils.infoIdProperty);
 
         		// Set to input value or default value (already initialized) depending if the Json contain the information needed
-    	    	
-    	    	
     	    	if (data.has(Utils.mpaaRatingProperty))
     	    		mpaaRating = data.getString(Utils.mpaaRatingProperty);
     	    	
@@ -72,7 +69,7 @@ public class AddInfo implements HttpHandler {
 	                System.out.println("Neo4j transaction successfully ran");
 	            }
         	}
-            catch (Exception e) { // Catch exception from createConnection
+            catch (Exception e) { // Catch exception from try block
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
             }
@@ -88,17 +85,16 @@ public class AddInfo implements HttpHandler {
      * @return Status code of whether the request was OK (200) or invalid (400)
      * @throws JSONException
      */
-
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
             if (data.has(Utils.infoIdProperty) && !duplicate(data.getString(Utils.infoIdProperty))){
-                return 200;
+                return 200; //OK
             }
-            return 400;
+            return 400; //Bad Request
         }
-        catch (Exception e) {
+        catch (Exception e) {// Catch exception from duplicate
             System.err.print("Caught Exception: " + e.getMessage());
-            return 500;
+            return 500;// Internal Server Error
         }
     }
 
@@ -111,14 +107,14 @@ public class AddInfo implements HttpHandler {
 
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
+                // Returns the info node that matches the infoId
                 String query = String.format("MATCH (i:%s) WHERE i.%s = $infoId RETURN i", Utils.infoLabel, Utils.infoIdProperty);
                 StatementResult results = tx.run(query, Values.parameters("infoId", infoId)); // Run query
-
+                // Check if results has any return
                 if (results.hasNext())
                     hasDuplicate = true;
             }
         }
-
         return hasDuplicate;
     }
     
