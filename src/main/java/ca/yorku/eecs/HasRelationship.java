@@ -177,21 +177,20 @@ public class HasRelationship implements HttpHandler {
     private String hasRelationship(String movieId, String actorId) throws Exception {
         String response = null;
 
-        try (Session session = Utils.driver.session()) {
-            try (Transaction tx = session.beginTransaction()) {
-                String query = String.format("MATCH (a:%s {%s: $actorId}), (m:%s {%s: $movieId}) OPTIONAL MATCH (a)-[r:%s]-(m) RETURN m.%s AS movieId, a.%s AS actorId, EXISTS ((a)-[:%s]-(m)) AS hasRelationship", Utils.actorLabel, Utils.actorIdProperty, Utils.movieLabel, Utils.movieIdProperty, Utils.actedInRelationship, Utils.movieIdProperty, Utils.actorIdProperty, Utils.actedInRelationship);
-                StatementResult results = tx.run(query, Values.parameters("movieId", movieId, "actorId", actorId));  // Use "AS" to rename key, since it will appear the name in the JSON
+        try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
 
-                JSONObject json = new JSONObject();
+            String query = String.format("MATCH (a:%s {%s: $actorId}), (m:%s {%s: $movieId}) OPTIONAL MATCH (a)-[r:%s]-(m) RETURN m.%s AS movieId, a.%s AS actorId, EXISTS ((a)-[:%s]-(m)) AS hasRelationship", Utils.actorLabel, Utils.actorIdProperty, Utils.movieLabel, Utils.movieIdProperty, Utils.actedInRelationship, Utils.movieIdProperty, Utils.actorIdProperty, Utils.actedInRelationship);
+            StatementResult results = tx.run(query, Values.parameters("movieId", movieId, "actorId", actorId));  // Use "AS" to rename key, since it will appear the name in the JSON
 
-                Record record = results.next();
+            JSONObject json = new JSONObject();
 
-                json.put("movieId", record.get("movieId").asString());
-                json.put("actorId", record.get("actorId").asString());
-                json.put("hasRelationship", record.get("hasRelationship").asBoolean());
+            Record record = results.next();
+            json.put("movieId", record.get("movieId").asString());
+            json.put("actorId", record.get("actorId").asString());
+            json.put("hasRelationship", record.get("hasRelationship").asBoolean());
 
-                response = json.toString();
-            }
+            response = json.toString();
+
         }
 
         return response;
