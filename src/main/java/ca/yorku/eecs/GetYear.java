@@ -108,21 +108,23 @@ public class GetYear implements HttpHandler {
             StatementResult results = tx.run(query, Values.parameters("year", year)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
-            Record record = results.next();
+            if (results.hasNext()) {
+                Record record = results.next();
 
-            ArrayList<String> movies = new ArrayList<String>();
+                ArrayList<String> movies = new ArrayList<String>();
 
-            if (!record.get("movies").isNull())
-                movies.add(record.get("movies").asString());
+                if (!record.get("movies").isNull())
+                    movies.add(record.get("movies").asString());
 
-            while (results.hasNext()) {
-                record = results.next();
-                movies.add(record.get("movies").asString());
+                while (results.hasNext()) {
+                    record = results.next();
+                    movies.add(record.get("movies").asString());
+                }
+
+                json.put("movies", movies.toString());
+
+                response = json.toString();
             }
-
-            json.put("movies", movies.toString());
-
-            response = json.toString();
 
            /*     // Query to get movies by year
             StatementResult result = tx.run("MATCH (m:Movie {year: $year}) RETURN m.name AS movieName",
