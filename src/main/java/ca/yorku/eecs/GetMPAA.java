@@ -69,8 +69,8 @@ public class GetMPAA implements HttpHandler {
             StatementResult results = tx.run(query, Values.parameters("mpaaRating", mpaaRating)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
-            System.out.println("HERE");
             Record record = results.next();
+            System.out.println("HERE");
 
             ArrayList<String> movies = new ArrayList<String>();
 
