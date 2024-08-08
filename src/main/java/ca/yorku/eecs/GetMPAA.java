@@ -67,10 +67,9 @@ public class GetMPAA implements HttpHandler {
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
             String query = String.format("MATCH (i:%s {%s: $mpaaRating}), (i)-[h:%s]-(m:%s) RETURN m.%s AS movies", Utils.infoLabel, Utils.mpaaRatingProperty, Utils.hasRelationship, Utils.movieLabel, Utils.movieIdProperty);
             StatementResult results = tx.run(query, Values.parameters("mpaaRating", mpaaRating)); // Use "AS" to rename key, since it will appear the name in the JSON
-            System.out.println("HERE");
-
 
             JSONObject json = new JSONObject();
+            System.out.println("HERE");
             Record record = results.next();
 
             ArrayList<String> movies = new ArrayList<String>();
