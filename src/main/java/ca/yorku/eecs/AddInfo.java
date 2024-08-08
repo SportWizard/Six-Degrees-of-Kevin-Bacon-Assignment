@@ -22,7 +22,6 @@ public class AddInfo implements HttpHandler {
     @Override
     public void handle(HttpExchange request) {
         try {
-            // Only accept POST request
             if (request.getRequestMethod().equals("PUT"))
                 this.handlePut(request);
             else
@@ -99,7 +98,7 @@ public class AddInfo implements HttpHandler {
         try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
                 String query = String.format("MATCH (i:%s) WHERE i.%s = $infoId RETURN i", Utils.infoLabel, Utils.infoIdProperty);
-                StatementResult results = tx.run(query, Values.parameters("infoID", infoId)); // Run query
+                StatementResult results = tx.run(query, Values.parameters("infoId", infoId)); // Run query
 
                 if (results.hasNext())
                     hasDuplicate = true;
