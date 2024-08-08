@@ -36,15 +36,12 @@ public class Utils {
 	
 	public static final String infoLabel = "info";
 	public static final String infoIdProperty = "infoId";
+	public static String imdbRatingProperty = "imdbRating";
+	public static String mpaaRatingProperty = "mpaaRating";
+	public static String yearProperty = "year";
 	
 	public static final String hasRelationship = "HAS";
 	public static final String actedInRelationship = "ACTED_IN";
-    
-	public static String imdbRatingProperty;
-	public static String mpaaRatingProperty;
-	public static String yearProperty;
-	public static String infoId;
-
 
 	public static String convert(InputStream inputStream) throws IOException {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
