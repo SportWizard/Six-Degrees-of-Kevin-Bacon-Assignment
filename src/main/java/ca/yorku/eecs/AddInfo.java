@@ -45,26 +45,41 @@ public class AddInfo implements HttpHandler {
         int statusCode = this.validateRequestData(data);
 
         if (statusCode == 200) {
-            double imdbRating = Double.parseDouble(data.getString(Utils.imdbRatingProperty));
-            String mpaaRating = data.getString(Utils.mpaaRatingProperty);
-            int year = Integer.parseInt(data.getString(Utils.yearProperty));
-            String infoId = data.getString(Utils.infoIdProperty);
+        	try {
+        		// Default values
+        		Double imdbRating = new Double(0);
+        		String mpaaRating = "";
+        		Integer year = new Integer(0);
+        		String infoId = data.getString(Utils.infoIdProperty);
 
-            System.out.println("IMDB Rating: " + imdbRating);
-            System.out.println("MPAA Rating: " + mpaaRating);
-            System.out.println("year: " + year);
-            System.out.println("Info Id: " + infoId);
-
-            try (Session session = Utils.driver.session()) {
-                String query = String.format("CREATE (i:%s {%s: $imdbRating, %s: $mpaaRating, %s: $year, %s: $infoId})", Utils.infoLabel, Utils.imdbRatingProperty, Utils.mpaaRatingProperty, Utils.yearProperty, Utils.infoIdProperty);
-                session.run(query, Values.parameters("imdbRating", imdbRating, "mpaaRating", mpaaRating, "year", year, "infoId", infoId));
-                System.out.println("Neo4j transaction successfully ran");
-            } catch (Exception e) { // Catch exception from createConnection
+        		// Set to input value or default value (already initialized) depending if the Json contain the information needed
+    	    	if (data.has(Utils.imdbRatingProperty))
+    	    		imdbRating = data.getDouble(Utils.imdbRatingProperty);
+    	    	
+    	    	if (data.has(Utils.mpaaRatingProperty))
+    	    		mpaaRating = data.getString(Utils.mpaaRatingProperty);
+    	    	
+    	    	if (data.has(Utils.yearProperty))
+    	    		year = data.getInt(Utils.yearProperty);
+	
+	            System.out.println("IMDB Rating: " + imdbRating);
+	            System.out.println("MPAA Rating: " + mpaaRating);
+	            System.out.println("year: " + year);
+	            System.out.println("Info Id: " + infoId);
+            
+	            try (Session session = Utils.driver.session()) {
+	                String query = String.format("CREATE (i:%s {%s: $imdbRating, %s: $mpaaRating, %s: $year, %s: $infoId})", Utils.infoLabel, Utils.imdbRatingProperty, Utils.mpaaRatingProperty, Utils.yearProperty, Utils.infoIdProperty);
+	                session.run(query, Values.parameters("imdbRating", imdbRating, "mpaaRating", mpaaRating, "year", year, "infoId", infoId));
+	                System.out.println("Neo4j transaction successfully ran");
+	            }
+        	}
+            catch (Exception e) { // Catch exception from createConnection
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
             }
-        } else
-            System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate");
+        }
+        else
+        	System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate");
 
         this.sendResponse(request, statusCode);
     }
