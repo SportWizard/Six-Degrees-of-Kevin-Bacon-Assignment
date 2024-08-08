@@ -40,9 +40,9 @@ public class Utils {
 	public static final String hasRelationship = "HAS";
 	public static final String actedInRelationship = "ACTED_IN";
     
-	public static String imdbRatingProperty;
-	public static String mpaaRatingProperty;
-	public static String yearProperty;
+	public static final String imdbRatingProperty = "imdbRating";
+	public static final String mpaaRatingProperty = "mpaaRating";
+	public static final String yearProperty = "year";
 	public static String infoId;
 
 
