@@ -18,7 +18,7 @@ import com.sun.net.httpserver.HttpHandler;
 /**
  * This class is used to get actor from the database (neo4j)
  */
-public class HasMovieInfo implements HttpHandler {
+public class  HasMovieInfo implements HttpHandler {
 
 	/**
 	 * Confirming the correct method sent
@@ -154,7 +154,7 @@ public class HasMovieInfo implements HttpHandler {
             	
             	json.put("movieId", record.get("movieId").asString()); 
             	json.put("infoId", record.get("infoId").asString());
-            	json.put("hasRelationsihp", record.get("hasRelationship").asBoolean());
+            	json.put("hasRelationship", record.get("hasRelationship").asBoolean());
             	
             	response = json.toString();
             }

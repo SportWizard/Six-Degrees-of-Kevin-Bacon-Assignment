@@ -1,5 +1,6 @@
 package ca.yorku.eecs;
 
+import java.util.List;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.json.JSONException;
@@ -33,7 +34,6 @@ public class GetMPAA implements HttpHandler {
 
         if (statusCode == 200) {
             try {
-               // response = getMPAA(data.getString(Utils.movieIdProperty));
                 response = getMPAA(data.getString(Utils.mpaaRatingProperty));
 
                 if (response == null) {
@@ -45,14 +45,12 @@ public class GetMPAA implements HttpHandler {
                 response = e.getMessage();
             }
         }
-
         sendResponse(request, statusCode, response);
     }
 
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
             if (data.has(Utils.mpaaRatingProperty)) {
-           // if (data.has(Utils.movieIdProperty)) {
                 return 200;
             }
             return 400;
@@ -71,22 +69,23 @@ public class GetMPAA implements HttpHandler {
             StatementResult results = tx.run(query, Values.parameters("mpaaRating", mpaaRating)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
-            Record record = results.next();
 
-            ArrayList<String> movies = new ArrayList<String>();
+            if (results.hasNext()) {
+                Record record = results.next();
 
-            if (!record.get("movies").isNull())
-                movies.add(record.get("movies").asString());
+                List<String> movies = new ArrayList<String>();
 
-            while (results.hasNext()) {
-                record = results.next();
-                movies.add(record.get("movies").asString());
+                if (!record.get("movies").isNull())
+                    movies.add(record.get("movies").asString());
+
+                while (results.hasNext()) {
+                    record = results.next();
+                    movies.add(record.get("movies").asString());
+                }
+
+                json.put("movies", movies.toString());
+                response = json.toString();
             }
-
-            json.put("movies", movies.toString());
-
-            response = json.toString();
-
         }
         return response;
     }
