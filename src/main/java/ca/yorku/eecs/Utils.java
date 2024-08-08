@@ -38,7 +38,7 @@ public class Utils {
 	public static final String infoIdProperty = "infoId";
 	public static final String imdbRatingProperty = "imdbRating";
 	public static final String mpaaRatingProperty = "mpaaRating";
-	public static finalString yearProperty = "year";
+	public static final String yearProperty = "year";
 	
 	public static final String hasRelationship = "HAS";
 	public static final String actedInRelationship = "ACTED_IN";
