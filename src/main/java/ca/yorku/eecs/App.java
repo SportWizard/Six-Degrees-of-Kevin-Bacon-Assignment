@@ -14,6 +14,8 @@ public class App {
         server.createContext("/api/v1/addMovieInfo", new AddMovieInfo());
         server.createContext("/api/v1/addMovie", new AddMovie());
         server.createContext("/api/v1/addRelationship", new AddRelationship());
+        server.createContext("/api/v1/addInfo", new AddInfo());
+
 
         // Get methods
         server.createContext("/api/v1/getActor", new GetActor());
@@ -23,6 +25,8 @@ public class App {
         server.createContext("/api/v1/getMovie", new GetMovie());
         server.createContext("/api/v1/getYear", new GetYear());
         server.createContext("/api/v1/hasRelationship", new HasRelationship());
+        server.createContext("/api/v1/getMPAA", new GetMPAA());
+
 
 
         server.start();
