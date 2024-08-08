@@ -55,7 +55,7 @@ public class GetYear implements HttpHandler {
                 }
             } catch (Exception e) { // Catch exception from getMoviesByYear
                 System.err.print("Caught Exception: " + e.getMessage());
-                statusCode = 500;
+                response = e.getMessage();
             }
         } else {
             System.out.println("Bad request: The request format is incorrect or required parameters are missing");
