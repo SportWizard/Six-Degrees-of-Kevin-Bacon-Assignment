@@ -44,7 +44,6 @@ public class GetMPAA implements HttpHandler {
                 response = e.getMessage();
             }
         }
-
         sendResponse(request, statusCode, response);
     }
 
@@ -84,10 +83,8 @@ public class GetMPAA implements HttpHandler {
                 }
 
                 json.put("movies", movies.toString());
-
                 response = json.toString();
             }
-
         }
         return response;
     }
