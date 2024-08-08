@@ -47,14 +47,13 @@ public class AddInfo implements HttpHandler {
         if (statusCode == 200) {
         	try {
         		// Default values
-        		Double imdbRating = new Double(0);
-        		String mpaaRating = "";
-        		Integer year = new Integer(0);
+        		double imdbRating = this.getImdb(data);
+        		String mpaaRating = this.getMpaa(data);
+        		Integer year = this.getyear(data);
         		String infoId = data.getString(Utils.infoIdProperty);
 
         		// Set to input value or default value (already initialized) depending if the Json contain the information needed
-    	    	if (data.has(Utils.imdbRatingProperty))
-    	    		imdbRating = data.getDouble(Utils.imdbRatingProperty);
+    	    	
     	    	
     	    	if (data.has(Utils.mpaaRatingProperty))
     	    		mpaaRating = data.getString(Utils.mpaaRatingProperty);
@@ -121,6 +120,27 @@ public class AddInfo implements HttpHandler {
         }
 
         return hasDuplicate;
+    }
+    
+    private double getImdb(JSONObject data) throws JSONException {
+    	if (data.has(Utils.imdbRatingProperty))
+    		return data.getDouble(Utils.imdbRatingProperty);
+    	else
+    		return 0;
+    }
+    
+    private String getMpaa(JSONObject data) throws JSONException {
+    	if (data.has(Utils.mpaaRatingProperty))
+    		return data.getString(Utils.mpaaRatingProperty);
+    	else
+    		return "";
+    }
+    
+    private int getyear(JSONObject data) throws JSONException {
+    	if (data.has(Utils.yearProperty))
+    		return data.getInt(Utils.yearProperty);
+    	else
+    		return 0;
     }
 
     /**
