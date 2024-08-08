@@ -73,7 +73,7 @@ public class GetYear implements HttpHandler {
             System.out.println("Bad request: The request format is incorrect or required parameters are missing");
             //this.sendResponse(request, statusCode, "");
         }
-        this.sendResponse(request, statusCode, "");
+        this.sendResponse(request, statusCode, response);
     }
 
     /**
