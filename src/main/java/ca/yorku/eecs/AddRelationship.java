@@ -143,7 +143,7 @@ public class AddRelationship implements HttpHandler {
      * @param actorId
      * @param movieId
      */
-    private void createRelationship(String actorId, String movieId) {
+    private void createRelationship(String actorId, String movieId) throws Exception {
         try (Session session = Utils.driver.session()) { // The parameter is to make sure the session is closed after it has finished
             String query = String.format("MATCH (a:%s), (m:%s) WHERE a.%s = $actorId AND m.%s = $movieId CREATE (a)-[:%s]->(m)", 
                                          Utils.actorLabel, Utils.movieLabel, Utils.actorIdProperty, Utils.movieIdProperty, Utils.actedInRelationship);

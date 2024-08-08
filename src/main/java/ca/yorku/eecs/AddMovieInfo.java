@@ -103,7 +103,7 @@ public class AddMovieInfo implements HttpHandler {
 	 * @param infoId
 	 * @return Whether the movie and info already establish a connection
 	 */
-	private boolean duplicate(String movieId, String infoId) {
+	private boolean duplicate(String movieId, String infoId) throws Exception {
 		boolean hasDuplicate = false;
 		
 		try (Session session = Utils.driver.session()) {
@@ -172,7 +172,7 @@ public class AddMovieInfo implements HttpHandler {
 	 * @param movieId
 	 * @param infoId
 	 */
-	private void createConnection(String movieId, String infoId) {
+	private void createConnection(String movieId, String infoId) throws Exception {
 	    try (Session session = Utils.driver.session()) {
 	    	// Get the movie and info that matches movieId and infoId, respectively. Then, connect movie to info
 	    	String query = String.format("MATCH (m:%s) WITH m MATCH (i:%s) WHERE m.%s = $movieId AND i.%s = $infoId CREATE (m)-[h:%s]->(i)", Utils.movieLabel, Utils.infoLabel, Utils.movieIdProperty, Utils.infoIdProperty, Utils.hasRelationship);
