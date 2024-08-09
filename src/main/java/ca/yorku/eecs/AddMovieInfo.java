@@ -65,7 +65,7 @@ public class AddMovieInfo implements HttpHandler {
 	        }
 	    }
 	    else
-	    	System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate");
+	    	System.out.println("Bad request: The request format is incorrect or required parameters are missing or there is a duplicate or either the movie or info has already established a relationship with another node");
 
 	    this.sendResponse(request, statusCode);
 	}
@@ -87,8 +87,8 @@ public class AddMovieInfo implements HttpHandler {
 	        if (!this.findMovie(movieId) || !this.findInfo(infoId))
 	            return 404; // movie or info not found
 
-	        if (this.duplicate(movieId, infoId))
-	            return 400; // Relationship already established
+	        if (this.duplicate(movieId, infoId) || this.hasRelationship(movieId, "movie") || this.hasRelationship(infoId, "info"))
+	            return 400; // Relationship already established between these two nodes or with other nodes
 
 	        return 200; // OK
 		}
@@ -119,6 +119,34 @@ public class AddMovieInfo implements HttpHandler {
 		}
 		
 		return hasDuplicate;
+	}
+	
+	/**
+	 * @param id
+	 * @return Whether the node already has a relationship
+	 */
+	private boolean hasRelationship(String id, String type) {
+		boolean hasRationship = false;
+		
+		try (Session session = Utils.driver.session()) {
+            try (Transaction tx = session.beginTransaction()) {
+            	String query = null;
+            	
+            	// Returns all connections for either the movie or the info
+            	if (type.equals("movie"))
+            		query = String.format("MATCH (m:%s {%s: $id})-[h:%s]-(i:%s) RETURN h", Utils.movieLabel, Utils.movieIdProperty, Utils.hasRelationship, Utils.infoLabel);
+            	else if (type.equals("info"))
+            		query = String.format("MATCH (m:%s)-[h:%s]-(i:%s {%s: $id}) RETURN h", Utils.movieLabel, Utils.hasRelationship, Utils.infoLabel, Utils.infoIdProperty);
+            		
+            	StatementResult results = tx.run(query, Values.parameters("id", id)); // Run query
+            	
+            	// Check if results has any return
+            	if (results.hasNext())
+            		hasRationship = true;
+            }
+		}
+		
+		return hasRationship;
 	}
 	
 	/**
