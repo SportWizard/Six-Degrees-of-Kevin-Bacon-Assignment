@@ -37,8 +37,8 @@ public class HasRelationship implements HttpHandler {
      * @throws JSONException
      */
     public void handleGet(HttpExchange request) throws IOException, JSONException {
-        String body = Utils.convert(request.getRequestBody());
-        JSONObject data = new JSONObject(body);
+        String body = Utils.convert(request.getRequestBody());//Convert request to String
+        JSONObject data = new JSONObject(body);//Convert String to Json
         String response = null;
 
         int statusCode = this.validateRequestData(data);
@@ -46,7 +46,7 @@ public class HasRelationship implements HttpHandler {
         if (statusCode == 200) {
             try {
                 response = this.hasRelationship(data.getString(Utils.movieIdProperty), data.getString(Utils.actorIdProperty));
-            } catch (Exception e) { // Catch exception from checkRelationship
+            } catch (Exception e) { // Catch exception from hasRelationship
                 System.err.print("Caught Exception: " + e.getMessage());
                 statusCode = 500;
             }
@@ -71,7 +71,7 @@ public class HasRelationship implements HttpHandler {
             String actorId = data.getString(Utils.actorIdProperty);
 
             if (!this.findMovie(movieId) || !this.findActor(actorId))
-                return 404; // movie or info not found
+                return 404; // movie or actor not found
 
             return 200; // OK
         }
@@ -81,30 +81,40 @@ public class HasRelationship implements HttpHandler {
         }
     }
 
+    /** Method checks whether the given movieId exists within the database and returns a boolean
+     * @param movieId the Id of the movie being checkeed
+     * @return boolean if the movie is in the database or not
+     * @throws Exception
+     * */
     private boolean findMovie(String movieId) throws Exception {
         boolean exist = false;
 
         try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
 
-                // Returns the movie that matches the movieId
+            // Returns the movie that matches the movieId
             String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", Utils.movieLabel, Utils.movieIdProperty);
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Run query
 
-                // Check if results has any return
+            // Check if results has any return
             if (results.hasNext())
                 exist = true;
         }
         return exist;
     }
 
+    /** Method checks whether the given actorId exists within the database and returns a boolean
+     * @param actorId the Id of the actor being checkeed
+     * @return boolean if the actor is in the database or not
+     * @throws Exception
+     * */
     private boolean findActor(String actorId) throws Exception {
         boolean exist = false;
 
         try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
-                // Returns the movie that matches the movieId
+            // Returns the actor that matches the actorId
             String query = String.format("MATCH (a:%s) WHERE a.%s = $actorId RETURN a", Utils.actorLabel, Utils.actorIdProperty);
             StatementResult results = tx.run(query, Values.parameters("actorId", actorId)); // Run query
-                // Check if results has any return
+            // Check if results has any return
             if (results.hasNext())
                 exist = true;
 

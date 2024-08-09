@@ -11,7 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 /**
- * This class is used to retrieve movies based on their release year
+ * This class is used to retrieve a list of movies from the year given
  */
 public class GetYear implements HttpHandler {
 
@@ -39,8 +39,8 @@ public class GetYear implements HttpHandler {
      * @throws JSONException
      */
     public void handleGet(HttpExchange request) throws IOException, JSONException {
-        String body = Utils.convert(request.getRequestBody());
-        JSONObject data = new JSONObject(body);
+        String body = Utils.convert(request.getRequestBody());//Convert request to String
+        JSONObject data = new JSONObject(body);//Convert String to Json
 
         String response = null;
         int statusCode = this.validateRequestData(data);
@@ -49,11 +49,11 @@ public class GetYear implements HttpHandler {
 
             try {
                 response = getYear(Integer.parseInt(data.getString(Utils.yearProperty)));
-
+                //checks if there exist no movies from that given year
                 if (response == null) {
                     statusCode = 404;
                 }
-            } catch (Exception e) { // Catch exception from getMoviesByYear
+            } catch (Exception e) { // Catch exception from getYear
                 System.err.print("Caught Exception: " + e.getMessage());
                 response = e.getMessage();
             }
@@ -90,10 +90,12 @@ public class GetYear implements HttpHandler {
         String response = null;
 
         try (Session session = Utils.driver.session();Transaction tx = session.beginTransaction()) {
+            //Matches info nodes to movie nodes where the info node contains the given year
             String query = String.format("MATCH (i:%s {%s: $year}), (i)-[h:%s]-(m:%s) RETURN m.%s AS movies", Utils.infoLabel, Utils.yearProperty, Utils.hasRelationship, Utils.movieLabel, Utils.movieIdProperty);
             StatementResult results = tx.run(query, Values.parameters("year", year)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
+            //checks that there have been matches returned
             if (results.hasNext()) {
                 Record record = results.next();
 
@@ -106,9 +108,7 @@ public class GetYear implements HttpHandler {
                     record = results.next();
                     movies.add(record.get("movies").asString());
                 }
-
                 json.put("movies", movies.toString());
-
                 response = json.toString();
             }
         }
