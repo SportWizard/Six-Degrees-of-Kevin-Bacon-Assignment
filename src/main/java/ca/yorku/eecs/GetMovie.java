@@ -40,8 +40,8 @@ public class GetMovie implements HttpHandler {
      * @throws IOException
      * @throws JSONException*/
     public void handleGet(HttpExchange request) throws IOException, JSONException {
-        String body = Utils.convert(request.getRequestBody());
-        JSONObject data = new JSONObject(body);
+        String body = Utils.convert(request.getRequestBody()); //Convert request to String
+        JSONObject data = new JSONObject(body); //Convert String to Json
 
         String response = null;
         int statusCode = validateRequestData(data);
@@ -50,6 +50,7 @@ public class GetMovie implements HttpHandler {
             try {
                 response = getMovie(data.getString(Utils.movieIdProperty));
 
+                //checks if there exists no such movie in the database and returns 404 code
                 if (response == null) {
                     statusCode = 404;
                 }
@@ -70,13 +71,13 @@ public class GetMovie implements HttpHandler {
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
             if (data.has(Utils.movieIdProperty)) {
-                return 200;
+                return 200; //OK
             }
-            return 400;
+            return 400; //Bad request
         }
         catch (Exception e) {
             System.err.println("Caught Exception: " + e.getMessage());
-            return 500;
+            return 500; //Internal Server Error
         }
     }
 
@@ -88,29 +89,33 @@ public class GetMovie implements HttpHandler {
         String response = null;
 
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
+            //Matches the actors that act in this movie and returns their actorId
             String query = String.format("MATCH (m:%s {%s: $movieId}) OPTIONAL MATCH (a:%s)-[r:%s]->(m) RETURN m.%s AS movieId, m.%s AS name, a.%s AS actors", Utils.movieLabel, Utils.movieIdProperty, Utils.actorLabel, Utils.actedInRelationship, Utils.movieIdProperty, Utils.movieNameProperty, Utils.actorIdProperty);
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
             Record record = results.next();
 
-            json.put("movieId", record.get("movieId").asString());
-            json.put("name", record.get("name").asString());
+            //Checks whether the results returned anything
+            if (!record.get("movieId").isNull()) {
+                json.put("movieId", record.get("movieId").asString());
+                json.put("name", record.get("name").asString());
 
-            List<String> actors = new ArrayList<String>();
+                List<String> actors = new ArrayList<String>();
 
-            if (!record.get("actors").isNull())
-                actors.add(record.get("actors").asString());
+                if (!record.get("actors").isNull()) {
+                    actors.add(record.get("actors").asString());
+                }
 
-            while (results.hasNext()) {
-                record = results.next();
-                actors.add(record.get("actors").asString());
+                while (results.hasNext()) {
+                    record = results.next();
+                    actors.add(record.get("actors").asString());
+                }
+
+                json.put("actors", actors.toString());
+
+                response = json.toString();
             }
-
-            json.put("actors", actors.toString());
-
-            response = json.toString();
-
         }
         return response;
     }
