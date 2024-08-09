@@ -1,6 +1,9 @@
 package ca.yorku.eecs;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Collections;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.json.*;
@@ -53,7 +56,7 @@ public class GetRank implements HttpHandler {
 	    
 	    if (statusCode == 200) {
 	    	try {
-	    		response = this.getTopMovies(data.getInt(this.nInput));
+	    		response = this.getTopMovies(data.getInt(this.nInput), this.getMoviesAndRatings());
 	    	}
 	    	catch (Exception e) {
 	    		System.err.println("Caught Exception: " + e.getMessage());
@@ -110,52 +113,72 @@ public class GetRank implements HttpHandler {
 	}
 	
 	/**
-	 * Get an actor that matches the actorId
-	 * @param actorId
-	 * @return the actor with the matching actorId
-	 * @throws Exception
-	 */
-	private String getTopMovies(int n) throws Exception {
-		String response = null;
-		ArrayList<String> movies = new ArrayList<String>();
-		ArrayList<Double> ratings = new ArrayList<Double>();
-		
-		this.getMoviesAndRatings(movies, ratings); // Use reference to get return values
-		
-		MergeSort mergeSort = new MergeSort();
-		mergeSort.sort(movies, ratings);
-		
-		return response;
-	}
-	
-	/**
 	 * Get all the movies with their corresponding IMDB rating
 	 * @return
 	 * @throws Exception
 	 */
-	private void getMoviesAndRatings(ArrayList<String> movies, ArrayList<Double> ratings) throws Exception {
+	private Hashtable<Double, ArrayList<String>> getMoviesAndRatings() throws Exception {
+		Hashtable<Double, ArrayList<String>> moviesByRating = new Hashtable<Double, ArrayList<String>>();
+		
 		try (Session session = Utils.driver.session()) {
             try (Transaction tx = session.beginTransaction()) {
             	// Count the number of movies
             	String query = String.format("MATCH (m:%s) OPTIONAL MATCH (m)-[r:%s]->(i:%s) RETURN m.%s AS movieId, i.%s As imdbRating", Utils.movieLabel, Utils.hasRelationship, Utils.infoLabel, Utils.movieIdProperty, Utils.imdbRatingProperty);
             	StatementResult results = tx.run(query);
             	
-            	Record record = results.next();
-            	
-            	
             	// Movies' index correspond to the ratings' index
-            	if (!record.get("movieId").isNull() && !record.get("imdbRating").isNull()) {
-            		movies.add(record.get("movieId").asString());
-            		ratings.add(record.get("imdbRating").asDouble());
-            	}
-            	
             	while (results.hasNext()) {
-            		record = results.next();
-            		movies.add(record.get("movieId").asString());
-            		ratings.add(record.get("imdbRating").asDouble());
-            	}
+                    Record record = results.next();
+                    
+                    // Check if the movieId and imdbRating are not null
+                    if (!record.get("movieId").isNull() && !record.get("imdbRating").isNull()) {
+                        String movie = record.get("movieId").asString();
+                        double rating = record.get("imdbRating").asDouble();
+                        
+                        ArrayList<String> movies = moviesByRating.get(rating);
+                        if (movies == null) {
+                            movies = new ArrayList<>();
+                            moviesByRating.put(rating, movies);
+                        }
+                        
+                        // Add movie to the list
+                        movies.add(movie);
+                    }
+                }
             }
         }
+		
+		return moviesByRating;
+	}
+	
+	/**
+	 * Get an actor that matches the actorId
+	 * @param actorId
+	 * @return the actor with the matching actorId
+	 * @throws Exception
+	 */
+	private String getTopMovies(int n, Hashtable<Double, ArrayList<String>> moviesByRating) throws Exception {
+		ArrayList<String> topMovies = new ArrayList<String>();
+		ArrayList<String> movies;
+		
+		// Selection sort
+		while (topMovies.size() < n) {
+			double maxRating = Collections.max(moviesByRating.keySet()); // Get the highest rating
+			
+			movies = moviesByRating.get(maxRating); // Get all the movies that has the highest rating
+			
+			// Add all the movies in the rating or until it reaches n
+			for (int i = 0; i < movies.size() && topMovies.size() < n; i++)
+				topMovies.add(movies.get(i));
+			
+			moviesByRating.remove(maxRating);
+		}
+		
+		JSONObject json = new JSONObject();
+		
+		json.put("movies", topMovies);
+		
+		return json.toString();
 	}
 	
 	/**
