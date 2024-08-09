@@ -108,9 +108,7 @@ public class GetYear implements HttpHandler {
                     record = results.next();
                     movies.add(record.get("movies").asString());
                 }
-
                 json.put("movies", movies.toString());
-
                 response = json.toString();
             }
         }
