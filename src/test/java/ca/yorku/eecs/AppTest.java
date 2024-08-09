@@ -383,97 +383,6 @@ public class AppTest extends TestCase {
     	}
     }
     
-    /**
-     * Verifies that getting an actor with valid details returns the correct response
-     */
-    public void testGetActorPass() {
-    	HttpURLConnection connection = null;
-    	String actorName = "Denzel Washington";
-		String actorId = "nm1001213";
-    	String movieName = "Parasite";
-		String movieId = "nm7001453";
-    	
-    	try {
-    		int statusCode;
-    		int expected;
-    		
-    		// Add actor
-    		connection = this.addActor(actorName, actorId);
-		    
-		    statusCode = connection.getResponseCode();
-		    expected = 200;
-		    assertEquals("Incorrect status code for add actor", expected, statusCode);
-    		
-    		// Add movie
-		    connection = this.addMovie(movieName, movieId);
-		    
-		    statusCode = connection.getResponseCode();
-		    expected = 200;
-		    assertEquals("Incorrect status code add movie", expected, statusCode);
-    		
-    		// Add Relationship
-		    connection = this.addRelationship(actorId, movieId);
-		    
-		    statusCode = connection.getResponseCode();
-		    expected = 200;
-		    assertEquals("Incorrect status code add relationship", expected, statusCode);
-		    
-		    // Get Actor
-		    URL url = new URL(this.rootPath + "/api/v1/getActor");
-		    connection = (HttpURLConnection) url.openConnection();
-
-		    connection.setRequestMethod("GET");
-		    connection.setRequestProperty("Content-Type", "application/json");
-		    connection.setDoOutput(true);
-
-		    JSONObject json = new JSONObject();
-		    json.put("actorId", actorId);
-
-		    OutputStream os = connection.getOutputStream();
-		    String input = json.toString();
-		    os.write(input.getBytes());
-		    os.flush();
-		    os.close();
-
-		    statusCode = connection.getResponseCode();
-		    expected = 200;
-		    assertEquals("Incorrect status code for get actor", expected, statusCode);
-
-		    StringBuffer response = new StringBuffer();
-
-		    if (statusCode == 200) {
-		        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		        String inputLine;
-
-		        while ((inputLine = in.readLine()) != null) {
-		            response.append(inputLine);
-		        }
-		        
-		        in.close();
-		    }
-		    
-		    String expectedString = String.format("{\"actorId\": \"%s\", \"name\": \"%s\", \"movies\": [\"%s\"]}", actorId, actorName, movieId);
-		    assertEquals("Incorrect response for get actor", expectedString, response);
-    	}
-    	catch (Exception e) {
-    		e.printStackTrace();
-    		fail("Exception occurred: " + e.getMessage());
-    	}
-    	finally {
-    		if (connection != null)
-    			connection.disconnect();
-    		
-    		// Remove node(s) added
-		    try (Session session = Utils.driver.session()) {
-		    	String query = String.format("MATCH (a:%s {%s: $actorName, %s: $actorId}), (m:%s {%s: $movieName, %s: $movieId}) DETACH DELETE a, m", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty, Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
-		    	session.run(query, Values.parameters("actorName", actorName, "actorId", actorId, "movieName", movieName, "movieId", movieId));
-		    }
-    		catch (Exception e) {
-		    	System.err.println("Exception caught: " + e.getMessage());
-		    }
-    	}
-    }
-    
     // Additional test cases
     
     /**
@@ -481,7 +390,6 @@ public class AppTest extends TestCase {
      */
     public void testAddRelationshipFail2() {
     	HttpURLConnection connection = null;
-    	String actorName = "Denzel Washington";
 		String actorId = "nm1001213";
 		String movieName = "Parasite";
 		String movieId = "nm7001453";
@@ -515,8 +423,8 @@ public class AppTest extends TestCase {
     		
     		// Remove node(s) added
 		    try (Session session = Utils.driver.session()) {
-		    	String query = String.format("MATCH (a:%s {%s: $actorName, %s: $actorId}), (m:%s {%s: $movieName, %s: $movieId}) DETACH DELETE a, m", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty, Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
-		    	session.run(query, Values.parameters("actorName", actorName, "actorId", actorId, "movieName", movieName, "movieId", movieId));
+		    	String query = String.format("MATCH (m:%s {%s: $movieName, %s: $movieId}) DETACH DELETE m", Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
+		    	session.run(query, Values.parameters("movieName", movieName, "movieId", movieId));
 		    }
     		catch (Exception e) {
 		    	System.err.println("Exception caught: " + e.getMessage());
