@@ -21,10 +21,11 @@ public class AddMovie implements HttpHandler{
     @Override
     public void handle(HttpExchange request) {
         try {
+            //Only accepts a PUT request
             if (request.getRequestMethod().equals("PUT")) {
                 handlePut(request);
             } else {
-                request.sendResponseHeaders(404, -1);
+                request.sendResponseHeaders(404, -1);// If the request method is incorrect
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -37,11 +38,11 @@ public class AddMovie implements HttpHandler{
  * @throws JSONException
  * */
     public void handlePut(HttpExchange request) throws IOException, JSONException{
-        String body = Utils.convert(request.getRequestBody());
-        JSONObject data = new JSONObject(body);
+        String body = Utils.convert(request.getRequestBody());// Convert request to String
+        JSONObject data = new JSONObject(body);// Convert to Json
 
         int statusCode = validateRequestData(data);
-
+        // Validate and process data, then save to the database
         if (statusCode == 200) {
             String name = data.getString(Utils.movieNameProperty);
             String movieId = data.getString(Utils.movieIdProperty);
@@ -53,7 +54,7 @@ public class AddMovie implements HttpHandler{
             	String query = String.format("CREATE (m:%s {%s: $name, %s: $movieId})", Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
                 session.run(query, Values.parameters("name", name, "movieId", movieId));
                 System.out.println("Neo4j transaction ran successfully");
-            } catch (Exception e) {
+            } catch (Exception e) {// Catch exception from try blocking (creating a movie node)
                 System.err.println("Caught Exception: " + e.getMessage());
                 statusCode = 500;
             }
@@ -71,13 +72,13 @@ public class AddMovie implements HttpHandler{
     private int validateRequestData(JSONObject data) throws JSONException {
         try {
             if (data.has(Utils.movieNameProperty) && data.has(Utils.movieIdProperty) && !duplicate(data.getString(Utils.movieIdProperty))) {
-                return 200;
+                return 200; //OK
             }
-            return 400;
+            return 400; //Bad request
         }
-        catch (Exception e) {
+        catch (Exception e) { //Catch exception from duplicate
             System.err.println("Caught Exception: " + e.getMessage());
-            return 500;
+            return 500; //Internal server error
         }
     }
 
@@ -87,9 +88,10 @@ public class AddMovie implements HttpHandler{
      * */
     private boolean duplicate(String movieId) throws Exception {
         try (Session session = Utils.driver.session(); Transaction tx = session.beginTransaction()) {
+            // Returns the movie that matches the movieId (if there is a match)
         	String query = String.format("MATCH (m:%s) WHERE m.%s = $movieId RETURN m", Utils.movieLabel, Utils.movieIdProperty);
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId));
-            return results.hasNext();
+            return results.hasNext(); //result of this statement determines whether there is a duplicate or not
         }
     }
 }
