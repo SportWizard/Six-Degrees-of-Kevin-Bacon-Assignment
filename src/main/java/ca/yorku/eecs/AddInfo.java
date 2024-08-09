@@ -32,7 +32,6 @@ public class AddInfo implements HttpHandler {
 
     /**
      * Handles PUT request from the client
-     *
      * @param request
      * @throws IOException
      * @throws JSONException
