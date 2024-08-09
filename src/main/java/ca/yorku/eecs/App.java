@@ -25,6 +25,7 @@ public class App {
         server.createContext("/api/v1/getYear", new GetYear());
         server.createContext("/api/v1/hasRelationship", new HasRelationship());
         server.createContext("/api/v1/getMPAA", new GetMPAA());
+        server.createContext("/api/v1/getRank", new GetRank());
 
 
 
