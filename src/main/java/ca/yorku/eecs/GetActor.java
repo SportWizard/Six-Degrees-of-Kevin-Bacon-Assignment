@@ -49,7 +49,7 @@ public class GetActor implements HttpHandler {
 		String body = Utils.convert(request.getRequestBody()); // Convert request to String
 
 		if (body.isEmpty()) {
-			String queryParam = request.getRequestURI().toString().split("\\?jsonStr?=")[1];
+			String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
 			body = URLDecoder.decode(queryParam, "UTF-8");
 		}
 	    JSONObject data = new JSONObject(body); // Convert JSON to an object
