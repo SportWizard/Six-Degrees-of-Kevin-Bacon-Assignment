@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -127,7 +128,43 @@ public class AppTest extends TestCase {
     	
     	return connection;
     }
-	
+	private HttpURLConnection getActor(String actorId) throws Exception {
+		HttpURLConnection connection;
+
+		try {
+			String jsonStr = String.format("{%s:%s}", Utils.actorIdProperty, actorId);
+			String encoded = URLEncoder.encode(jsonStr, "UTF-8");
+
+			URL url = new URL(this.rootPath + "/api/v1/getActor?jsonStr=" + encoded);
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setRequestProperty("Content-Type", "application/json;utf-8");
+		}
+		catch (Exception e) {
+			throw new Exception(e);
+		}
+
+		return connection;
+	}
+
+	private HttpURLConnection getMovie(String movieId) throws Exception {
+		HttpURLConnection connection;
+
+		try {
+			String jsonStr = String.format("{%s:%s}", Utils.movieIdProperty, movieId);
+			String encoded = URLEncoder.encode(jsonStr, "UTF-8");
+
+			URL url = new URL(this.rootPath + "/api/v1/getMovie?jsonStr=" + encoded);
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setRequestProperty("Content-Type", "application/json;utf-8");
+		}
+		catch (Exception e) {
+			throw new Exception(e);
+		}
+
+		return connection;
+	}
 	/**
      * Verifies that adding an actor with valid details returns a 200 status code
      */
@@ -135,7 +172,7 @@ public class AppTest extends TestCase {
     	HttpURLConnection connection = null;
     	String actorName = "Denzel Washington";
 		String actorId = "nm1001213";
-    	
+
 		try {
 			// Add actor
 			connection = this.addActor(actorName, actorId);
@@ -281,7 +318,7 @@ public class AppTest extends TestCase {
 		String actorId = "nm1001213";
     	String movieName = "Parasite";
 		String movieId = "nm7001453";
-    	
+
     	try {
     		int statusCode;
     		int expected;
@@ -431,4 +468,96 @@ public class AppTest extends TestCase {
 		    }
     	}
     }
+
+	public void testGetMoviePass() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String movieName = "Lord of the Rings";
+		String movieId = "nm7450264";
+
+		String actorName = "Elijah Wood";
+		String actorId = "nm6250725";
+
+		try {
+			int expected = 200;
+
+			//Add actor
+			connection = this.addActor(actorName, actorId);
+			assertEquals("Incorrect status code for add actor", expected, connection.getResponseCode());
+			// Add movie
+			connection = this.addMovie(movieName, movieId);
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+			//add Relationship
+			connection = this.addRelationship(actorId, movieId);
+			assertEquals("Incorrect status code for add relationship", expected, connection.getResponseCode());
+
+			// Get response
+			connection = this.getMovie(movieId);
+			assertEquals("Incorrect status code for get movie", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try (Session session = Utils.driver.session()) {
+				String query = String.format("MATCH (m:%s {%s: $movieName, %s: $movieId}) DETACH DELETE m", Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
+				session.run(query, Values.parameters("movieName", movieName, "movieId", movieId));
+			}
+			try (Session session = Utils.driver.session()) {
+				String query = String.format("MATCH (a:%s {%s: $actorName, %s: $actorId}) DELETE a", Utils.actorLabel, Utils.actorNameProperty, Utils.actorIdProperty);
+				session.run(query, Values.parameters("actorName", actorName, "actorId", actorId)); // Run the query in Neo4j
+			}
+
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	public void testGetMovieFail() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String movieName = "Lord of the Rings";
+		String movieId = "nm7450264";
+
+
+		try {
+
+			int expected = 200;
+			// Add movie
+			connection = this.addMovie(movieName, movieId);
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+
+
+			// Get response
+			connection = this.getMovie(null);
+			expected = 400;
+			assertEquals("Incorrect status code for get movie", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try (Session session = Utils.driver.session()) {
+				String query = String.format("MATCH (m:%s {%s: $movieName, %s: $movieId}) DELETE m", Utils.movieLabel, Utils.movieNameProperty, Utils.movieIdProperty);
+				session.run(query, Values.parameters("movieName", movieName, "movieId", movieId));
+			}
+
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+
 }
