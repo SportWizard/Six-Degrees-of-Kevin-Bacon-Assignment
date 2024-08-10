@@ -43,13 +43,13 @@ public class GetMovie implements HttpHandler {
      * @throws JSONException*/
     public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody()); //Convert request to String
-        System.out.println(body);
 
+        /*
         if (body.isEmpty()) {
             String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
             body = URLDecoder.decode(queryParam, "UTF-8");
+        } */
 
-        }
         JSONObject data = new JSONObject(body);
 
         String response = null;
@@ -58,9 +58,8 @@ public class GetMovie implements HttpHandler {
         if (statusCode == 200) {
             try {
                 response = getMovie(data.getString(Utils.movieIdProperty));
-
                 //checks if there exists no such movie in the database and returns 404 code
-                if (response.isEmpty()) {
+                if (response == null) {
                     statusCode = 404;
                 }
             }
