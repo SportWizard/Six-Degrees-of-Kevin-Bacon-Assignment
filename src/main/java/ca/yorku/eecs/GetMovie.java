@@ -28,7 +28,6 @@ public class GetMovie implements HttpHandler {
     public void handle(HttpExchange request) {
         try {
             if (request.getRequestMethod().equals("GET")) {
-
                 handleGet(request);
             } else {
                 request.sendResponseHeaders(404, -1);
@@ -85,7 +84,6 @@ public class GetMovie implements HttpHandler {
             return 400; //Bad request
         }
         catch (Exception e) {
-            System.out.println("error here");
             System.err.println("Caught Exception: " + e.getMessage());
             return 500; //Internal Server Error
         }
