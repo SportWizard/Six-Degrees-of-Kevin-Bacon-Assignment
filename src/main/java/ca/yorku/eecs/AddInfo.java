@@ -50,13 +50,6 @@ public class AddInfo implements HttpHandler {
         		Integer year = this.getyear(data);
         		String infoId = data.getString(Utils.infoIdProperty);
 
-        		// Set to input value or default value (already initialized) depending if the Json contain the information needed
-    	    	if (data.has(Utils.mpaaRatingProperty))
-    	    		mpaaRating = data.getString(Utils.mpaaRatingProperty);
-    	    	
-    	    	if (data.has(Utils.yearProperty))
-    	    		year = data.getInt(Utils.yearProperty);
-	
 	            System.out.println("IMDB Rating: " + imdbRating);
 	            System.out.println("MPAA Rating: " + mpaaRating);
 	            System.out.println("year: " + year);
