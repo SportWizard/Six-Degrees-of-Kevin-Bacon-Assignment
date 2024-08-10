@@ -45,7 +45,7 @@ public class GetMovie implements HttpHandler {
         String body = Utils.convert(request.getRequestBody()); //Convert request to String
 
         if (body.isEmpty()) {
-            String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
+            String queryParam = request.getRequestURI().toString().split("\\?movieId=")[1];
             body = URLDecoder.decode(queryParam, "UTF-8");
 
         }
