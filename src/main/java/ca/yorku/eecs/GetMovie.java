@@ -44,11 +44,11 @@ public class GetMovie implements HttpHandler {
     public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody()); //Convert request to String
 
-        /*
+
         if (body.isEmpty()) {
             String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
             body = URLDecoder.decode(queryParam, "UTF-8");
-        } */
+        }
 
         JSONObject data = new JSONObject(body);
 
@@ -105,7 +105,7 @@ public class GetMovie implements HttpHandler {
             Record record = results.next();
 
             //Checks whether the results returned anything
-            if (!record.get("movieId").isNull()) {
+            if (results.hasNext()) {
                 json.put("movieId", record.get("movieId").asString());
                 json.put("name", record.get("name").asString());
 
