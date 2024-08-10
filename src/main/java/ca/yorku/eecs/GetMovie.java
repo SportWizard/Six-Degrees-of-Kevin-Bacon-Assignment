@@ -58,14 +58,13 @@ public class GetMovie implements HttpHandler {
             try {
                 response = getMovie(data.getString(Utils.movieIdProperty));
                 //checks if there exists no such movie in the database and returns 404 code
-                if (response == null || response == "") {
+                if (response == null || response.equals("")) {
                     statusCode = 404;
                 }
             }
             catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
                 response = e.getMessage();
-                statusCode = 404;
             }
         }
 
