@@ -46,6 +46,7 @@ public class GetMovie implements HttpHandler {
         JSONObject data = null;
         if (body.isEmpty()) {
            String query = request.getRequestURI().getQuery();
+           System.out.println(query);
            String[] params = new String[2];
            int index = query.indexOf("=");
            params[0] = URLDecoder.decode(query.substring(0, index), "UTF-8");
