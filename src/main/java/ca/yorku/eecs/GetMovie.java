@@ -49,7 +49,6 @@ public class GetMovie implements HttpHandler {
             String[] keyValue = queryParam.split("=");
             data = new JSONObject();
             data.put(keyValue[0], keyValue[1]);
-
         } else {
             data = new JSONObject(body); //Convert String to Json
         }
