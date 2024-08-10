@@ -43,13 +43,16 @@ public class GetMovie implements HttpHandler {
      * @throws JSONException*/
     public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody()); //Convert request to String
-
+        JSONObject data = null;
         if (body.isEmpty()) {
-            String queryParam = request.getRequestURI().toString().split("\\?movieId=")[1];
-            body = URLDecoder.decode(queryParam, "UTF-8");
+            String queryParam = request.getRequestURI().getQuery();
+            String[] keyValue = queryParam.split("=");
+            data = new JSONObject();
+            data.put(keyValue[0], keyValue[1]);
 
+        } else {
+            data = new JSONObject(body); //Convert String to Json
         }
-        JSONObject data = new JSONObject(body); //Convert String to Json
 
         String response = null;
         int statusCode = validateRequestData(data);
