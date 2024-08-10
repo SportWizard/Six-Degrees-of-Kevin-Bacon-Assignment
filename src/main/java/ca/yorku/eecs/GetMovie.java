@@ -65,6 +65,7 @@ public class GetMovie implements HttpHandler {
             catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
                 response = e.getMessage();
+                statusCode = 404;
             }
         }
 
