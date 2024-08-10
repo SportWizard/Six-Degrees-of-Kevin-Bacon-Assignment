@@ -102,10 +102,11 @@ public class GetMovie implements HttpHandler {
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
-            Record record = results.next();
 
             //Checks whether the results returned anything
             if (results.hasNext()) {
+                Record record = results.next();
+
                 json.put("movieId", record.get("movieId").asString());
                 json.put("name", record.get("name").asString());
 
