@@ -59,7 +59,7 @@ public class GetMovie implements HttpHandler {
                 response = getMovie(data.getString(Utils.movieIdProperty));
 
                 //checks if there exists no such movie in the database and returns 404 code
-                if (response == null) {
+                if (response.isEmpty()) {
                     statusCode = 404;
                 }
             }
