@@ -1,5 +1,7 @@
 package ca.yorku.eecs;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
@@ -26,6 +28,7 @@ public class GetMovie implements HttpHandler {
     public void handle(HttpExchange request) {
         try {
             if (request.getRequestMethod().equals("GET")) {
+
                 handleGet(request);
             } else {
                 request.sendResponseHeaders(404, -1);
@@ -41,6 +44,12 @@ public class GetMovie implements HttpHandler {
      * @throws JSONException*/
     public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody()); //Convert request to String
+
+        if (body.isEmpty()) {
+            String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
+            body = URLDecoder.decode(queryParam, "UTF-8");
+
+        }
         JSONObject data = new JSONObject(body); //Convert String to Json
 
         String response = null;
@@ -76,6 +85,7 @@ public class GetMovie implements HttpHandler {
             return 400; //Bad request
         }
         catch (Exception e) {
+            System.out.println("error here");
             System.err.println("Caught Exception: " + e.getMessage());
             return 500; //Internal Server Error
         }
