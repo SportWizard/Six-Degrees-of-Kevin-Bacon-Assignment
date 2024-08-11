@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
+
 import org.json.*;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
@@ -49,6 +51,12 @@ public class GetRank implements HttpHandler {
 	 */
 	public void handleGet(HttpExchange request) throws IOException, JSONException {
 		String body = Utils.convert(request.getRequestBody()); // Convert request to String
+		
+		if (body.isEmpty()) {
+	    	String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
+	    	body = URLDecoder.decode(queryParam, "UTF-8");
+	    }
+		
 	    JSONObject data = new JSONObject(body); // Convert JSON to an object
 	    
 	    int statusCode = this.validateRequestData(data);
