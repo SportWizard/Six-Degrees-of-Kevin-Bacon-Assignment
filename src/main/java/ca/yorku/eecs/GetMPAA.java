@@ -9,6 +9,7 @@ import org.neo4j.driver.v1.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 
 /*This class returns a list of movies that have the mpaaRating provided by the client (if there exist any that do) */
@@ -31,6 +32,12 @@ public class GetMPAA implements HttpHandler {
 
     public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody());//Convert request to String
+        
+        if (body.isEmpty()) {
+	    	String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
+	    	body = URLDecoder.decode(queryParam, "UTF-8");
+	    }
+        
         JSONObject data = new JSONObject(body);//Convert String to Json
 
         String response = null;

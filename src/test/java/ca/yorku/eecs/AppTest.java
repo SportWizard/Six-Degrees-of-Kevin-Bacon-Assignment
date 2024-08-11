@@ -1421,4 +1421,436 @@ public class AppTest extends TestCase {
 		    }
     	}
     }
+    
+    /**
+     * Verifies that getting MPAA with valid details returns a 200 status code
+     */
+    public void testGetMPAAPass() {
+    	HttpURLConnection connection = null;
+    	String[] movieName = {"Parasite", "The Dark Knight", "A Few Good Men"};
+		String[] movieId = {"nm7001453", "nm1234567", "nm1234568"};
+		String[] infoImdb = {"8.5", "8.6", "7.5"};
+		String[] infoMpaa = {"R", "PG-13", "PG-13"};
+		String[] infoYear = {"2016", "2012", "2005"};
+		String[] infoId = {"nm0987654", "nm0864213", "nm2857493"};
+		
+		try {
+			int statusCode;
+    		int expected;
+    		
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add movie
+			    connection = this.addMovie(movieName[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movie", expected, statusCode);
+		    }
+		    
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add info
+			    connection = this.addInfo(infoId[i], infoMpaa[i], infoYear[i], infoImdb[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add info", expected, statusCode);
+			    
+			    // Add movieInfo
+			    connection = this.addMovieInfo(infoId[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movieInfo", expected, statusCode);
+		    }
+		    
+		    // Get MPAA
+		    Random rand = new Random();
+		    int index = rand.nextInt(infoMpaa.length);
+		    
+		    String jsonStr = String.format("{\"%s\":%s}", Utils.mpaaRatingProperty, infoMpaa[index]);
+		    connection = this.getRequest(jsonStr, "getMPAA");
+		    
+		    statusCode = connection.getResponseCode();
+		    expected = 200;
+		    assertEquals("Incorrect status code for get MPAA", expected, statusCode);
+		}
+		catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception occurred: " + e.getMessage());
+    	}
+    	finally {
+    		if (connection != null)
+    			connection.disconnect();
+    		
+    		// Remove node(s) added
+    		try {
+    			for (int i = 0; i < movieId.length; i++)
+    				this.deleteNode(movieId[i], Utils.movieLabel, Utils.movieIdProperty);
+    			
+    			for (int i = 0; i < infoId.length; i++)
+    				this.deleteNode(infoId[i], Utils.infoLabel, Utils.infoIdProperty);
+		    }
+    		catch (Exception e) {
+		    	System.err.println("Exception caught: " + e.getMessage());
+		    }
+    	}
+    }
+    
+    /**
+     * Verifies that getting MPAA with valid details returns a 400 status code
+     */
+    public void testGetMPAAFail() {
+    	HttpURLConnection connection = null;
+    	String[] movieName = {"Parasite", "The Dark Knight", "A Few Good Men"};
+		String[] movieId = {"nm7001453", "nm1234567", "nm1234568"};
+		String[] infoImdb = {"8.5", "8.6", "7.5"};
+		String[] infoMpaa = {"R", "PG-13", "PG-13"};
+		String[] infoYear = {"2016", "2012", "2005"};
+		String[] infoId = {"nm0987654", "nm0864213", "nm2857493"};
+		
+		try {
+			int statusCode;
+    		int expected;
+    		
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add movie
+			    connection = this.addMovie(movieName[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movie", expected, statusCode);
+		    }
+		    
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add info
+			    connection = this.addInfo(infoId[i], infoMpaa[i], infoYear[i], infoImdb[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add info", expected, statusCode);
+			    
+			    // Add movieInfo
+			    connection = this.addMovieInfo(infoId[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movieInfo", expected, statusCode);
+		    }
+		    
+		    // Get MPAA
+		    String jsonStr = String.format("{}");
+		    connection = this.getRequest(jsonStr, "getMPAA");
+		    
+		    statusCode = connection.getResponseCode();
+		    expected = 400;
+		    assertEquals("Incorrect status code for get MPAA", expected, statusCode);
+		}
+		catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception occurred: " + e.getMessage());
+    	}
+    	finally {
+    		if (connection != null)
+    			connection.disconnect();
+    		
+    		// Remove node(s) added
+    		try {
+    			for (int i = 0; i < movieId.length; i++)
+    				this.deleteNode(movieId[i], Utils.movieLabel, Utils.movieIdProperty);
+    			
+    			for (int i = 0; i < infoId.length; i++)
+    				this.deleteNode(infoId[i], Utils.infoLabel, Utils.infoIdProperty);
+		    }
+    		catch (Exception e) {
+		    	System.err.println("Exception caught: " + e.getMessage());
+		    }
+    	}
+    }
+    
+    /**
+     * Verifies that getting MPAA with valid details returns a 404 status code
+     */
+    public void testGetMPAAFail2() {
+    	HttpURLConnection connection = null;
+    	String[] movieName = {"Parasite", "The Dark Knight", "A Few Good Men"};
+		String[] movieId = {"nm7001453", "nm1234567", "nm1234568"};
+		String[] infoImdb = {"8.5", "8.6", "7.5"};
+		String[] infoMpaa = {"R", "PG-13", "PG-13"};
+		String[] infoYear = {"2016", "2012", "2005"};
+		String[] infoId = {"nm0987654", "nm0864213", "nm2857493"};
+		
+		try {
+			int statusCode;
+    		int expected;
+    		
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add movie
+			    connection = this.addMovie(movieName[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movie", expected, statusCode);
+		    }
+		    
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add info
+			    connection = this.addInfo(infoId[i], infoMpaa[i], infoYear[i], infoImdb[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add info", expected, statusCode);
+			    
+			    // Add movieInfo
+			    connection = this.addMovieInfo(infoId[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movieInfo", expected, statusCode);
+		    }
+		    
+		    // Get MPAA
+		    String jsonStr = String.format("{\"%s\":%s}", Utils.mpaaRatingProperty, "Invalid");
+		    connection = this.getRequest(jsonStr, "getMPAA");
+		    
+		    statusCode = connection.getResponseCode();
+		    expected = 404;
+		    assertEquals("Incorrect status code for get MPAA", expected, statusCode);
+		}
+		catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception occurred: " + e.getMessage());
+    	}
+    	finally {
+    		if (connection != null)
+    			connection.disconnect();
+    		
+    		// Remove node(s) added
+    		try {
+    			for (int i = 0; i < movieId.length; i++)
+    				this.deleteNode(movieId[i], Utils.movieLabel, Utils.movieIdProperty);
+    			
+    			for (int i = 0; i < infoId.length; i++)
+    				this.deleteNode(infoId[i], Utils.infoLabel, Utils.infoIdProperty);
+		    }
+    		catch (Exception e) {
+		    	System.err.println("Exception caught: " + e.getMessage());
+		    }
+    	}
+    }
+    
+    /**
+     * Verifies that getting year with valid details returns a 200 status code
+     */
+    public void testGetYearPass() {
+    	HttpURLConnection connection = null;
+    	String[] movieName = {"Parasite", "The Dark Knight", "A Few Good Men"};
+		String[] movieId = {"nm7001453", "nm1234567", "nm1234568"};
+		String[] infoImdb = {"8.5", "8.6", "7.5"};
+		String[] infoMpaa = {"R", "PG-13", "PG-13"};
+		String[] infoYear = {"2016", "2012", "2005"};
+		String[] infoId = {"nm0987654", "nm0864213", "nm2857493"};
+		
+		try {
+			int statusCode;
+    		int expected;
+    		
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add movie
+			    connection = this.addMovie(movieName[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movie", expected, statusCode);
+		    }
+		    
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add info
+			    connection = this.addInfo(infoId[i], infoMpaa[i], infoYear[i], infoImdb[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add info", expected, statusCode);
+			    
+			    // Add movieInfo
+			    connection = this.addMovieInfo(infoId[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movieInfo", expected, statusCode);
+		    }
+		    
+		    // Get year
+		    Random rand = new Random();
+		    int index = rand.nextInt(infoYear.length);
+		    
+		    String jsonStr = String.format("{\"%s\":%s}", Utils.yearProperty, infoYear[index]);
+		    connection = this.getRequest(jsonStr, "getYear");
+		    
+		    statusCode = connection.getResponseCode();
+		    expected = 200;
+		    assertEquals("Incorrect status code for get year", expected, statusCode);
+		}
+		catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception occurred: " + e.getMessage());
+    	}
+    	finally {
+    		if (connection != null)
+    			connection.disconnect();
+    		
+    		// Remove node(s) added
+    		try {
+    			for (int i = 0; i < movieId.length; i++)
+    				this.deleteNode(movieId[i], Utils.movieLabel, Utils.movieIdProperty);
+    			
+    			for (int i = 0; i < infoId.length; i++)
+    				this.deleteNode(infoId[i], Utils.infoLabel, Utils.infoIdProperty);
+		    }
+    		catch (Exception e) {
+		    	System.err.println("Exception caught: " + e.getMessage());
+		    }
+    	}
+    }
+    
+    /**
+     * Verifies that getting year with valid details returns a 400 status code
+     */
+    public void testGetYearFail() {
+    	HttpURLConnection connection = null;
+    	String[] movieName = {"Parasite", "The Dark Knight", "A Few Good Men"};
+		String[] movieId = {"nm7001453", "nm1234567", "nm1234568"};
+		String[] infoImdb = {"8.5", "8.6", "7.5"};
+		String[] infoMpaa = {"R", "PG-13", "PG-13"};
+		String[] infoYear = {"2016", "2012", "2005"};
+		String[] infoId = {"nm0987654", "nm0864213", "nm2857493"};
+		
+		try {
+			int statusCode;
+    		int expected;
+    		
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add movie
+			    connection = this.addMovie(movieName[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movie", expected, statusCode);
+		    }
+		    
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add info
+			    connection = this.addInfo(infoId[i], infoMpaa[i], infoYear[i], infoImdb[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add info", expected, statusCode);
+			    
+			    // Add movieInfo
+			    connection = this.addMovieInfo(infoId[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movieInfo", expected, statusCode);
+		    }
+		    
+		    // Get year
+		    String jsonStr = String.format("{}");
+		    connection = this.getRequest(jsonStr, "getYear");
+		    
+		    statusCode = connection.getResponseCode();
+		    expected = 400;
+		    assertEquals("Incorrect status code for get year", expected, statusCode);
+		}
+		catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception occurred: " + e.getMessage());
+    	}
+    	finally {
+    		if (connection != null)
+    			connection.disconnect();
+    		
+    		// Remove node(s) added
+    		try {
+    			for (int i = 0; i < movieId.length; i++)
+    				this.deleteNode(movieId[i], Utils.movieLabel, Utils.movieIdProperty);
+    			
+    			for (int i = 0; i < infoId.length; i++)
+    				this.deleteNode(infoId[i], Utils.infoLabel, Utils.infoIdProperty);
+		    }
+    		catch (Exception e) {
+		    	System.err.println("Exception caught: " + e.getMessage());
+		    }
+    	}
+    }
+    
+    /**
+     * Verifies that getting year with valid details returns a 404 status code
+     */
+    public void testGetYearFail2() {
+    	HttpURLConnection connection = null;
+    	String[] movieName = {"Parasite", "The Dark Knight", "A Few Good Men"};
+		String[] movieId = {"nm7001453", "nm1234567", "nm1234568"};
+		String[] infoImdb = {"8.5", "8.6", "7.5"};
+		String[] infoMpaa = {"R", "PG-13", "PG-13"};
+		String[] infoYear = {"2016", "2012", "2005"};
+		String[] infoId = {"nm0987654", "nm0864213", "nm2857493"};
+		
+		try {
+			int statusCode;
+    		int expected;
+    		
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add movie
+			    connection = this.addMovie(movieName[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movie", expected, statusCode);
+		    }
+		    
+		    for (int i = 0; i < movieName.length; i++) {
+		    	// Add info
+			    connection = this.addInfo(infoId[i], infoMpaa[i], infoYear[i], infoImdb[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add info", expected, statusCode);
+			    
+			    // Add movieInfo
+			    connection = this.addMovieInfo(infoId[i], movieId[i]);
+			    
+			    statusCode = connection.getResponseCode();
+			    expected = 200;
+			    assertEquals("Incorrect status code add movieInfo", expected, statusCode);
+		    }
+		    
+		    // Get year
+		    String jsonStr = String.format("{\"%s\":%s}", Utils.yearProperty, "-1");
+		    connection = this.getRequest(jsonStr, "getYear");
+		    
+		    statusCode = connection.getResponseCode();
+		    expected = 404;
+		    assertEquals("Incorrect status code for get year", expected, statusCode);
+		}
+		catch (Exception e) {
+    		e.printStackTrace();
+    		fail("Exception occurred: " + e.getMessage());
+    	}
+    	finally {
+    		if (connection != null)
+    			connection.disconnect();
+    		
+    		// Remove node(s) added
+    		try {
+    			for (int i = 0; i < movieId.length; i++)
+    				this.deleteNode(movieId[i], Utils.movieLabel, Utils.movieIdProperty);
+    			
+    			for (int i = 0; i < infoId.length; i++)
+    				this.deleteNode(infoId[i], Utils.infoLabel, Utils.infoIdProperty);
+		    }
+    		catch (Exception e) {
+		    	System.err.println("Exception caught: " + e.getMessage());
+		    }
+    	}
+    }
 }
