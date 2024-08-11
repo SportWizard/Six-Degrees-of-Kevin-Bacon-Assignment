@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Random;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -265,7 +266,6 @@ public class AppTest extends TestCase {
     	
     	return connection;
     }
-	
 	/**
      * Verifies that adding an actor with valid details returns a 200 status code
      */
@@ -273,11 +273,11 @@ public class AppTest extends TestCase {
     	HttpURLConnection connection = null;
     	String actorName = "Denzel Washington";
 		String actorId = "nm1001213";
-    	
+
 		try {
 			// Add actor
 			connection = this.addActor(actorName, actorId);
-			
+
 		    // Get response
 		    int statusCode = connection.getResponseCode();
 		    int expected = 200;
@@ -397,7 +397,7 @@ public class AppTest extends TestCase {
     			connection.disconnect();
     		
     		// Remove node(s) added
-		    try (Session session = Utils.driver.session()) { 
+		    try (Session session = Utils.driver.session()) {
 		    	String query = String.format("MATCH (m:%s {%s: $movieName}) DELETE m", Utils.movieLabel, Utils.movieNameProperty);
 		    	session.run(query, Values.parameters("movieName", movieName));
 		    }
@@ -416,7 +416,7 @@ public class AppTest extends TestCase {
 		String actorId = "nm1001213";
     	String movieName = "Parasite";
 		String movieId = "nm7001453";
-    	
+
     	try {
     		int statusCode;
     		int expected;
@@ -453,8 +453,8 @@ public class AppTest extends TestCase {
     		
     		// Remove node(s) added
 		    try {
-		    	this.deleteNode(actorId, Utils.actorLabel, Utils.actorIdProperty);
-		    	this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+				this.deleteNode(actorId, Utils.actorLabel, Utils.actorIdProperty);
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
 		    }
     		catch (Exception e) {
 		    	System.err.println("Exception caught: " + e.getMessage());
@@ -1853,4 +1853,413 @@ public class AppTest extends TestCase {
 		    }
     	}
     }
+
+	/*Verifies that a 200 status code is returned when an existing movie is searched for */
+	public void testGetMoviePass() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String movieName = "Lord of the Rings";
+		String movieId = "nm7450264";
+
+		String actorName = "Elijah Wood";
+		String actorId = "nm6250725";
+
+		try {
+			int expected = 200;
+			//Add actor
+			connection = this.addActor(actorName, actorId);
+			assertEquals("Incorrect status code for add actor", expected, connection.getResponseCode());
+			// Add movie
+			connection = this.addMovie(movieName, movieId);
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+			//add Relationship
+			connection = this.addRelationship(actorId, movieId);
+			assertEquals("Incorrect status code for add relationship", expected, connection.getResponseCode());
+
+			// Get response
+			String jsonStr = String.format("{%s:%s}", Utils.movieIdProperty, movieId);
+			connection = this.getRequest(jsonStr, "getMovie");
+			assertEquals("Incorrect status code for get movie", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(actorId, Utils.actorLabel, Utils.actorIdProperty);
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			}
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 404 status code (not found) is returned when an id not belonging to any movie is provided */
+	public void testGetMovieFail() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String movieId = "nm7450264";
+
+		try {
+			// Get response
+			String jsonStr = String.format("{%s:%s}", Utils.movieIdProperty, movieId);
+			connection = this.getRequest(jsonStr, "getMovie");
+			int expected = 404;
+			assertEquals("Incorrect status code for get movie", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try  {
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			} catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 200 status code is returned when a valid existing relationship is checked*/
+	public void testHasRelationshipPass() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String movieName = "Lord of the Rings";
+		String movieId = "nm7450264";
+
+		String actorName = "Elijah Wood";
+		String actorId = "nm6250725";
+
+		try {
+			int expected = 200;
+			//Add actor
+			connection = this.addActor(actorName, actorId);
+			assertEquals("Incorrect status code for add actor", expected, connection.getResponseCode());
+			// Add movie
+			connection = this.addMovie(movieName, movieId);
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+			//add Relationship
+			connection = this.addRelationship(actorId, movieId);
+			assertEquals("Incorrect status code for add relationship", expected, connection.getResponseCode());
+			// Get response
+			String jsonStr = String.format("{%s:%s, %s:%s}", Utils.movieIdProperty, movieId, Utils.actorIdProperty, actorId);
+			connection = this.getRequest(jsonStr, "hasRelationship");
+			assertEquals("Incorrect status code for has relationship", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(actorId, Utils.actorLabel, Utils.actorIdProperty);
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			} catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 404 not found status code is returned when a null property is provided*/
+	public void testHasRelationshipFail() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String movieName = "Lord of the Rings";
+		String movieId = "nm7450264";
+
+		try {
+			int expected = 200;
+			//add movie
+			connection = this.addMovie(movieName, movieId);
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+
+			// Get response
+			expected = 404; //since actorId won't be found given that it is null
+			String jsonStr = String.format("{%s:%s, %s:%s}", Utils.movieIdProperty, movieId, Utils.actorIdProperty, null);
+			connection = this.getRequest(jsonStr, "hasRelationship");
+			assertEquals("Incorrect status code for has relationship", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			} catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 200 code is returned when a valid info node is created */
+	public void testAddInfoPass() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String infoId = "nm4562095";
+		String year = "2014";
+		String imdbRating = "5.7";
+		String mpaaRating = "R";
+
+		try {
+			// Add info node
+			connection = this.addInfo(infoId, mpaaRating, year, imdbRating);
+			// Get response
+			int expected = 200;
+			assertEquals("Incorrect status code for add info", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try (Session session = Utils.driver.session()) {
+				this.deleteNode(infoId, Utils.infoLabel, Utils.infoIdProperty);
+			}
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 400 status code is returned when trying to add a node with duplicated infoId */
+	public void testAddInfoFail() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String infoId = "nm4562095";
+		String year = "2014";
+		String imdbRating = "5.7";
+		String mpaaRating = "R";
+
+		try {
+			// Add info node
+			connection = this.addInfo(infoId, mpaaRating, null, null);
+			// Get response
+			int expected = 200;
+			assertEquals("Incorrect status code for add info", expected, connection.getResponseCode());
+
+			//Try adding another info node with the same Id, but different info
+			connection = this.addInfo(infoId, null, year, imdbRating);
+			expected = 400;
+			assertEquals("Incorrect status code for add info", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(infoId, Utils.infoLabel, Utils.infoIdProperty);
+			}
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 200 code is returned when a valid info node to movie node relationship is created */
+	public void testAddMovieInfoPass() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String infoId = "nm4562095";
+		String year = "1993";
+		String imdbRating = "8.2";
+		String mpaaRating = "PG-13";
+
+		String movieName = "Jurassic Park";
+		String movieId = "nm7405724";
+		try {
+			// Add info node
+			connection = this.addInfo(infoId, mpaaRating, year, imdbRating);
+			// Get response
+			int expected = 200;
+			assertEquals("Incorrect status code for add info", expected, connection.getResponseCode());
+
+			//Add movie node
+			connection = this.addMovie(movieName, movieId);
+			//Get response
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+
+			//create relationship between the two nodes
+			connection = this.addMovieInfo(infoId, movieId);
+			assertEquals("Incorrect status code for add movie info", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(infoId, Utils.infoLabel, Utils.infoIdProperty);
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			}
+
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 404 (not found) code is returned when trying to create an invalid relationship between an existing movie node and non-existing info node */
+	public void testAddMovieInfoFail() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String infoId = "nm4562095";
+
+		String movieName = "Jurassic Park";
+		String movieId = "nm7405724";
+		try {
+			//Add movie node
+			connection = this.addMovie(movieName, movieId);
+			//Get response
+			int expected = 200;
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+
+			//No info node with this infoId exists
+			connection = this.addMovieInfo(infoId, movieId);
+			expected = 404;
+			assertEquals("Incorrect status code for add movie info", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(infoId, Utils.infoLabel, Utils.infoIdProperty);
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			}
+
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 200 code is returned when searching for a valid/existing movie node/info node relationship */
+	public void testHasMovieInfoPass() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+		String infoId = "nm4562095";
+		String year = "1993";
+		String imdbRating = "8.2";
+		String mpaaRating = "PG-13";
+
+		String movieName = "Jurassic Park";
+		String movieId = "nm7405724";
+
+		try {
+			int expected = 200;
+			// Add info node
+			connection = this.addInfo(infoId, mpaaRating, year, imdbRating);
+			// Get response
+			assertEquals("Incorrect status code for add info", expected, connection.getResponseCode());
+
+			//Add movie node
+			connection = this.addMovie(movieName, movieId);
+			//Get response
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+
+			//create relationship
+			connection = this.addMovieInfo(infoId, movieId);
+			assertEquals("Incorrect status code for add movie info", expected, connection.getResponseCode());
+
+			//get response
+			String jsonStr = String.format("{%s:%s, %s:%s}", Utils.movieIdProperty, movieId, Utils.infoIdProperty, infoId);
+			connection = this.getRequest(jsonStr, "hasMovieInfo");
+			assertEquals("Incorrect status code for has movie info", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(infoId, Utils.infoLabel, Utils.infoIdProperty);
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			}
+
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
+	/*Verifies that a 400 status code is returned when making a request with missing parameters*/
+	public void testHasMovieInfoFail() { // Name of the test method must start with test
+		HttpURLConnection connection = null;
+
+		String movieName = "Jurassic Park";
+		String movieId = "nm7405724";
+
+		try {
+			int expected = 200;
+			//Add movie node
+			connection = this.addMovie(movieName, movieId);
+			//Get response
+			assertEquals("Incorrect status code for add movie", expected, connection.getResponseCode());
+
+			//No info information
+			String jsonStr = String.format("{%s:%s}", Utils.movieIdProperty, movieId);
+			connection = this.getRequest(jsonStr, "hasMovieInfo");
+			expected = 400;
+			assertEquals("Incorrect status code for has movie info", expected, connection.getResponseCode());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occurred: " + e.getMessage());
+		}
+		finally {
+			// Disconnect
+			if (connection != null)
+				connection.disconnect();
+
+			// Remove node(s) added
+			try {
+				this.deleteNode(movieId, Utils.movieLabel, Utils.movieIdProperty);
+			}
+			catch (Exception e) {
+				System.err.println("Exception caught: " + e.getMessage());
+			}
+		}
+	}
+
 }

@@ -1,5 +1,7 @@
 package ca.yorku.eecs;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
@@ -41,7 +43,13 @@ public class GetMovie implements HttpHandler {
      * @throws JSONException*/
     public void handleGet(HttpExchange request) throws IOException, JSONException {
         String body = Utils.convert(request.getRequestBody()); //Convert request to String
-        JSONObject data = new JSONObject(body); //Convert String to Json
+
+        if (body.isEmpty()) {
+            String queryParam = request.getRequestURI().toString().split("\\?jsonStr=")[1];
+            body = URLDecoder.decode(queryParam, "UTF-8");
+        }
+
+        JSONObject data = new JSONObject(body);
 
         String response = null;
         int statusCode = validateRequestData(data);
@@ -49,15 +57,15 @@ public class GetMovie implements HttpHandler {
         if (statusCode == 200) {
             try {
                 response = getMovie(data.getString(Utils.movieIdProperty));
-
                 //checks if there exists no such movie in the database and returns 404 code
-                if (response == null) {
+                if (response == null || response.equals("")) {
                     statusCode = 404;
                 }
             }
             catch (Exception e) {
                 System.err.println("Caught Exception: " + e.getMessage());
                 response = e.getMessage();
+                statusCode = 404;
             }
         }
 
@@ -94,10 +102,11 @@ public class GetMovie implements HttpHandler {
             StatementResult results = tx.run(query, Values.parameters("movieId", movieId)); // Use "AS" to rename key, since it will appear the name in the JSON
 
             JSONObject json = new JSONObject();
-            Record record = results.next();
 
             //Checks whether the results returned anything
-            if (!record.get("movieId").isNull()) {
+            if (results.hasNext()) {
+                Record record = results.next();
+
                 json.put("movieId", record.get("movieId").asString());
                 json.put("name", record.get("name").asString());
 
